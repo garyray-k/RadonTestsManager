@@ -6,18 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
-namespace RadonTestsManager.Controllers {
+namespace RadonTestsManager.LSVials.Controllers {
     [Route("api/[controller]")]
-    [ApiController]
-    public class JobsController : Controller {
+    public class LSVialController : Controller {
         // GET: api/values
         [HttpGet]
         public IEnumerable<string> Get() {
-            return new[] {
-                "1 - JobNumber1",
-                "2 - JobNumber2",
-                "3 - JobNumber3"
-            };
+            return new string[] { "value1", "value2" };
         }
 
         // GET api/values/5
@@ -40,6 +35,5 @@ namespace RadonTestsManager.Controllers {
         [HttpDelete("{id}")]
         public void Delete(int id) {
         }
-
     }
 }

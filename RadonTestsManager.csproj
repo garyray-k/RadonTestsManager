@@ -2,13 +2,25 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
+    <DockerComposeProjectPath>../docker-compose.dcproj</DockerComposeProjectPath>
   </PropertyGroup>
 
   <ItemGroup>
     <Folder Include="wwwroot\" />
-    <Folder Include="Controllers\" />
-    <Folder Include="Views\" />
-    <Folder Include="Views\Home\" />
+    <Folder Include="UtilityMVCs\" />
+    <Folder Include="Jobs\" />
+    <Folder Include="CRMs\" />
+    <Folder Include="LSVials\" />
+    <Folder Include="CRMs\Models\" />
+    <Folder Include="Jobs\Controllers\" />
+    <Folder Include="Jobs\Models\" />
+    <Folder Include="LSVials\Controllers\" />
+    <Folder Include="LSVials\Models\" />
+    <Folder Include="UtilityMVCs\Views\" />
+    <Folder Include="UtilityMVCs\Controllers\" />
+    <Folder Include="UtilityMVCs\Models\" />
+    <Folder Include="CRMs\Controllers\" />
+    <Folder Include="DBContext\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -16,4 +28,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.1.2" PrivateAssets="All" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Remove="appsettings.Development.json" />
+    <Content Remove="appsettings.Development" />
+  </ItemGroup>
 </Project>
