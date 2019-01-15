@@ -4,6 +4,8 @@ using System.ComponentModel.DataAnnotations;
 namespace RadonTestsManager.Model {
     public class NewJobDTO {
         [Required]
+        int JobNumber { get; set; }
+        [Required]
         [MinLength(3)]
         public string ServiceType { get; set; }
         public Address JobAddress { get; set; }

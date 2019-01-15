@@ -7,6 +7,7 @@ namespace RadonTestsManager.Jobs.Models {
     public class Job {
         public int JobId { get; set; }
 
+        public int JobNumber { get; set; }
         public string ServiceType{ get; set; }
         public DateTime ServiceDeadLine{ get; set; }
         public string DeviceType{ get; set; }
