@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace RadonTestsManager.Model {
-    public class NewLSVialDTO {
+    public class LSVialDTO {
         [Required]
         public int SerialNumber { get; set; }
         public string Status { get; set; }

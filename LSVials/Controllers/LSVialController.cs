@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RadonTestsManager.DBContext;
@@ -15,6 +16,19 @@ namespace RadonTestsManager.LSVials.Controllers {
     [Route("api/[controller]")]
     public class LSVialController : Controller {
         private readonly RadonTestsManagerContext _context;
+        private static readonly IMapper _lsVialMapper;
+
+        static LSVialController() {
+            var config = new MapperConfiguration(cfg => {
+                cfg.CreateMap<LSVial, LSVialDTO>()
+                    .ForMember(dto => dto.SerialNumber, opt => opt.MapFrom(lsvial => lsvial.SerialNumber))
+                    .ForMember(dto => dto.Status, opt => opt.MapFrom(lsvial => lsvial.Status))
+                    .ForMember(dto => dto.TestStart, opt => opt.MapFrom(lsvial => lsvial.TestStart))
+                    .ForMember(dto => dto.TestFinish, opt => opt.MapFrom(lsvial => lsvial.TestFinish));
+            });
+
+            _lsVialMapper = config.CreateMapper();
+        }
 
         public LSVialController(RadonTestsManagerContext context) {
             _context = context;
@@ -22,19 +36,29 @@ namespace RadonTestsManager.LSVials.Controllers {
 
         // GET: api/values
         [HttpGet]
-        public IEnumerable<string> Get() {
-            return new string[] { "value1", "value2" };
+        public async Task<ActionResult<LSVialDTO[]>> GetAllLSVials() {
+            List<LSVial> lSVials = await _context.LSVials
+                .ToListAsync();
+            return lSVials == null ? (ActionResult<LSVialDTO[]>)NotFound() : (ActionResult<LSVialDTO[]>)Ok(_lsVialMapper.Map<LSVialDTO[]>(lSVials));
         }
 
         // GET api/values/5
         [HttpGet("{id}")]
-        public string Get(int id) {
-            return "value";
+        public async Task<ActionResult<LSVialDTO>> GetLSVial(int serialNum) {
+            var lsVial = await _context.LSVials
+                    .Include(p => p.LSVialId)
+                    .Include(p => p.Status)
+                    .FirstOrDefaultAsync(p => p.SerialNumber == serialNum);
+            if (lsVial == null) {
+                return NotFound();
+            }
+
+            return Ok(_lsVialMapper.Map<LSVialDTO>(lsVial));
         }
 
         // POST api/values
         [HttpPost("")]
-        public async Task<IActionResult> AddNewLSVial([FromBody] NewLSVialDTO newLSVial) {
+        public async Task<IActionResult> AddNewLSVial([FromBody] LSVialDTO newLSVial) {
             var lSVial = new LSVial() {
                 SerialNumber = newLSVial.SerialNumber,
                 Status = newLSVial.Status,
@@ -49,7 +73,7 @@ namespace RadonTestsManager.LSVials.Controllers {
             _context.Jobs.Add(newJob);
             await _context.SaveChangesAsync();
             return CreatedAtAction(
-                nameof(Get),
+                nameof(GetLSVial),
                 new { id = lSVial.LSVialId, name = "ThisIsTheName", status = (lSVial.Status + "updated") });
         }
 
@@ -72,7 +96,7 @@ namespace RadonTestsManager.LSVials.Controllers {
             var lSVial = await _context.LSVials.FindAsync(id);
             _context.LSVials.Remove(lSVial);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Get));
+            return RedirectToAction(nameof(GetAllLSVials));
         }
     }
 }
