@@ -104,6 +104,7 @@ namespace RadonTestsManager.Migrations
                     ArrivalTime = table.Column<DateTime>(nullable: false),
                     ContinousRadonMonitorCRMId = table.Column<int>(nullable: true),
                     LSVialId = table.Column<int>(nullable: true),
+                    JobNumber = table.Column<int>(nullable: true),
                     JobAddressAddressId = table.Column<int>(nullable: true)
                 },
                 constraints: table =>
