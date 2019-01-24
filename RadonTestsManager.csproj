@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\" />
-    <Folder Include="UtilityMVCs\" />
+    <Folder Include="Utility\" />
     <Folder Include="Jobs\" />
     <Folder Include="CRMs\" />
     <Folder Include="LSVials\" />
@@ -16,12 +16,13 @@
     <Folder Include="Jobs\Models\" />
     <Folder Include="LSVials\Controllers\" />
     <Folder Include="LSVials\Models\" />
-    <Folder Include="UtilityMVCs\Views\" />
-    <Folder Include="UtilityMVCs\Controllers\" />
-    <Folder Include="UtilityMVCs\Models\" />
+    <Folder Include="Utility\Views\" />
+    <Folder Include="Utility\Controllers\" />
+    <Folder Include="Utility\Models\" />
     <Folder Include="CRMs\Controllers\" />
     <Folder Include="DBContext\" />
-    <Folder Include="Users\" />
+    <Folder Include="DTOs\" />
+    <Folder Include="Utility\Results\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -36,5 +37,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Users\EmptyClass.cs" />
+    <Compile Remove="Users\User.cs" />
   </ItemGroup>
 </Project>

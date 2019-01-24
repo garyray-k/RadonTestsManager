@@ -15,7 +15,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using RadonTestsManager.DBContext;
-using RadonTestsManager.Users;
+using RadonTestsManager.Utility.Models;
 
 namespace RadonTestsManager {
     public class Startup {

@@ -5,9 +5,10 @@ using RadonTestsManager.CRMs.Models;
 using RadonTestsManager.Jobs.Models;
 using RadonTestsManager.LSVials.Models;
 using RadonTestsManager.Model;
+using RadonTestsManager.Utility.Models;
 
 namespace RadonTestsManager.DBContext {
-    public class RadonTestsManagerContext : IdentityDbContext {
+    public class RadonTestsManagerContext : IdentityDbContext<User> {
         public DbSet<Address> Addresses { get; set; }
         public DbSet<Job> Jobs { get; set; }
         public DbSet<ContinuousRadonMonitor> ContinuousRadonMonitors { get; set; }
