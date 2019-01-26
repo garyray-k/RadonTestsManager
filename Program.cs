@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,10 +19,15 @@ namespace RadonTestsManager {
             using (var scope = host.Services.CreateScope()) {
                 var services = scope.ServiceProvider;
                 var context = services.GetService<RadonTestsManagerContext>();
+                var roleManager = services.GetService<RoleManager<IdentityRole>>();
                 try {
                     context.Database.Migrate();
+                    context.SeedRolesAsync(roleManager).Wait();
                 } catch (Exception ex) {
                     Console.WriteLine(ex.Message);
+                    var logger = services.GetRequiredService<ILogger<Program>>();
+                    logger.LogError(ex, "An error occured while seeding and migrating the GiveNTake Database.");
+                    throw;
                 }
             }
             host.Run();

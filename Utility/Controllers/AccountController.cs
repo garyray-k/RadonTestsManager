@@ -42,6 +42,9 @@ namespace RadonTestsManager.Utility.Controllers {
                 }
                 return BadRequest(ModelState);
             }
+            await _userManager.AddClaimAsync(newUser,
+                new Claim("registration-date", DateTime.UtcNow.ToString("yyyyMMdd")));
+
             return Ok();
         }
 
@@ -53,13 +56,30 @@ namespace RadonTestsManager.Utility.Controllers {
             User user = await _userManager.FindByEmailAsync(login.Email);
             JwtSecurityToken token = await GenerateTokenAsync(user); // defined
             string serializedToken = new JwtSecurityTokenHandler().WriteToken(token); // serilize the token
-            return Ok();
+            return Ok(serializedToken);
+        }
+
+        [Authorize]
+        [HttpGet("Email")]
+        public ActionResult<string> GetEmail() {
+            return Ok(User.Identity.Name);
         }
 
         private async Task<JwtSecurityToken> GenerateTokenAsync(User user) {
-            var claims = new List<Claim>();
+            var claims = new List<Claim>() {
+                new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim(ClaimTypes.Name, user.UserName)
+            };
 
-            // Loading the user Claims
+            var userClaims = await _userManager.GetClaimsAsync(user);
+            claims.AddRange(userClaims);
+
+            var roles = await _userManager.GetRolesAsync(user);
+            foreach (var role in roles) {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
 
             var expirationDays = _configuration.GetValue<int>("JWTConfiguration:TokenExpirationDays");
             var signingKey = Encoding.UTF8.GetBytes(_configuration.GetValue<string>("JWTConfiguration:SigningKey"));

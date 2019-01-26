@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RadonTestsManager.DBContext;
@@ -35,6 +36,7 @@ namespace RadonTestsManager.LSVials.Controllers {
         }
 
         // GET: api/values
+        // TODO removed but left for reference [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<ActionResult<LSVialDTO[]>> GetAllLSVials() {
             List<LSVial> lSVials = await _context.LSVials
@@ -57,8 +59,11 @@ namespace RadonTestsManager.LSVials.Controllers {
         }
 
         // POST api/values
+        [Authorize]
         [HttpPost("")]
         public async Task<IActionResult> AddNewLSVial([FromBody] LSVialDTO newLSVial) {
+            var user = await _context.Users.FindAsync(User.Identity.Name);
+
             var lSVial = new LSVial() {
                 SerialNumber = newLSVial.SerialNumber,
                 Status = newLSVial.Status,
@@ -74,7 +79,7 @@ namespace RadonTestsManager.LSVials.Controllers {
             await _context.SaveChangesAsync();
             return CreatedAtAction(
                 nameof(GetLSVial),
-                new { id = lSVial.LSVialId, name = "ThisIsTheName", status = (lSVial.Status + "updated") });
+                new { id = lSVial.LSVialId, name = "ThisIsTheName", status = (lSVial.Status + "updated")});
         }
 
         // PUT api/values/5

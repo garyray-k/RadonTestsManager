@@ -4,10 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +17,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using RadonTestsManager.DBContext;
+using RadonTestsManager.Utility;
 using RadonTestsManager.Utility.Models;
 
 namespace RadonTestsManager {
@@ -48,7 +51,12 @@ namespace RadonTestsManager {
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JWTConfiguration:SigningKey"]))
                     };
                 });
-            services.AddMvc();
+            services.AddMvc(config => {
+                var policy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+                config.Filters.Add(new AuthorizeFilter(policy));
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -66,7 +74,7 @@ namespace RadonTestsManager {
             };
 
             app.UseStaticFiles(staticFileOptions);
-
+            app.UseAuthentication();
             app.UseMvc(routes => {
                 routes
                     .MapRoute( name: "default", template: "{controller=Home}/{action=Index}/{id?}")
@@ -81,7 +89,7 @@ namespace RadonTestsManager {
                     defaults: new { controller = "Home", action = "Index" });
             });
 
-            app.UseAuthentication();
+
 
             app.Run(async (context) => {
                 await context.Response.WriteAsync("Hello World!");
