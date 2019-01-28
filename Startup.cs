@@ -51,6 +51,8 @@ namespace RadonTestsManager {
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JWTConfiguration:SigningKey"]))
                     };
                 });
+            services.AddCors();
+            services.AddApplicationInsightsTelemetry(Configuration);
             services.AddMvc(config => {
                 var policy = new AuthorizationPolicyBuilder()
                     .RequireAuthenticatedUser()
@@ -63,7 +65,7 @@ namespace RadonTestsManager {
         public void Configure(IApplicationBuilder app, IHostingEnvironment env) {
             if (env.IsDevelopment()) {
                 app.UseDeveloperExceptionPage();
-                Console.WriteLine("developer enabled");
+
             }
             app.UseDefaultFiles();
 
@@ -72,7 +74,6 @@ namespace RadonTestsManager {
             StaticFileOptions staticFileOptions = new StaticFileOptions() {
                 ContentTypeProvider = provider
             };
-
             app.UseStaticFiles(staticFileOptions);
             app.UseAuthentication();
             app.UseMvc(routes => {
@@ -89,7 +90,12 @@ namespace RadonTestsManager {
                     defaults: new { controller = "Home", action = "Index" });
             });
 
-
+            // seems like I shouldn't allow this but the book says to add it
+            //app.UseCors(b => {
+            //    b.WithHeaders();
+            //    b.AllowAnyMethod();
+            //    b.AllowAnyOrigin();
+            //});
 
             app.Run(async (context) => {
                 await context.Response.WriteAsync("Hello World!");

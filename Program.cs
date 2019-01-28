@@ -39,6 +39,7 @@ namespace RadonTestsManager {
                 .ConfigureAppConfiguration((hostingContext, config) => {
                     config.SetBasePath(Directory.GetCurrentDirectory());
                 })
+                .UseApplicationInsights()
                 .UseStartup<Startup>();
     }
 }

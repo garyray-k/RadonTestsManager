@@ -6,6 +6,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using RadonTestsManager.DBContext;
 using RadonTestsManager.Jobs.Models;
 using RadonTestsManager.LSVials.Models;
@@ -18,6 +19,7 @@ namespace RadonTestsManager.LSVials.Controllers {
     public class LSVialController : Controller {
         private readonly RadonTestsManagerContext _context;
         private static readonly IMapper _lsVialMapper;
+        private readonly ILogger<LSVialController> _logger;
 
         static LSVialController() {
             var config = new MapperConfiguration(cfg => {
@@ -31,8 +33,9 @@ namespace RadonTestsManager.LSVials.Controllers {
             _lsVialMapper = config.CreateMapper();
         }
 
-        public LSVialController(RadonTestsManagerContext context) {
+        public LSVialController(RadonTestsManagerContext context, ILogger<LSVialController> logger) {
             _context = context;
+            _logger = logger;
         }
 
         // GET: api/values
