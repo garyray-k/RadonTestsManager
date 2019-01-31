@@ -8,28 +8,20 @@
   <ItemGroup>
     <Folder Include="wwwroot\" />
     <Folder Include="Utility\" />
-    <Folder Include="Jobs\" />
-    <Folder Include="CRMs\" />
-    <Folder Include="LSVials\" />
-    <Folder Include="CRMs\Models\" />
-    <Folder Include="Jobs\Controllers\" />
-    <Folder Include="Jobs\Models\" />
-    <Folder Include="LSVials\Controllers\" />
-    <Folder Include="LSVials\Models\" />
-    <Folder Include="Utility\Views\" />
-    <Folder Include="Utility\Controllers\" />
-    <Folder Include="Utility\Models\" />
-    <Folder Include="CRMs\Controllers\" />
     <Folder Include="DBContext\" />
     <Folder Include="DTOs\" />
-    <Folder Include="Utility\Results\" />
+    <Folder Include="Controllers\" />
+    <Folder Include="Models\" />
+    <Folder Include="Views\" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.1.2" PrivateAssets="All" />
     <PackageReference Include="AutoMapper" Version="8.0.0" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.2.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="4.0.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.1.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -39,5 +31,8 @@
   <ItemGroup>
     <Compile Remove="Users\EmptyClass.cs" />
     <Compile Remove="Users\User.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="CRMs\.DS_Store" />
   </ItemGroup>
 </Project>

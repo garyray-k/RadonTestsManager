@@ -10,6 +10,7 @@ namespace RadonTestsManager.Controllers {
     public class HomeController : Controller {
         // GET: /<controller>/
         [Route("Home/Index")]
+        [HttpGet]
         public IActionResult Index() {
             return View();
         }

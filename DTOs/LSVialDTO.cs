@@ -11,5 +11,6 @@ namespace RadonTestsManager.Model {
         public DateTime? TestFinish { get; set; }
         [Required]
         public int JobNumber { get; set; }
+        public string LastUpdatedBy { get; set; }
     }
 }

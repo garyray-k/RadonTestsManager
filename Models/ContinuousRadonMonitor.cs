@@ -17,6 +17,7 @@ namespace RadonTestsManager.CRMs.Models {
         public DateTime TestStart{  get; set; }
         public DateTime TestFinish{  get; set; }
         public string Status{  get; set; }
+        public string LastUpdatedBy { get; set; }
 
         public Address Location{  get; set; }
         public List<CRMMaintenanceLogEntry> MaintenanceLog{  get; set; }

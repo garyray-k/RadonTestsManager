@@ -15,6 +15,7 @@ using RadonTestsManager.Model;
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace RadonTestsManager.LSVials.Controllers {
+    [Authorize]
     [Route("api/[controller]")]
     public class LSVialController : Controller {
         private readonly RadonTestsManagerContext _context;
@@ -38,16 +39,14 @@ namespace RadonTestsManager.LSVials.Controllers {
             _logger = logger;
         }
 
-        // GET: api/values
-        // TODO removed but left for reference [Authorize(Roles = "Admin")]
+        // GET: api/lsvial
         [HttpGet]
         public async Task<ActionResult<LSVialDTO[]>> GetAllLSVials() {
-            List<LSVial> lSVials = await _context.LSVials
-                .ToListAsync();
+            List<LSVial> lSVials = await _context.LSVials.ToListAsync();
             return lSVials == null ? (ActionResult<LSVialDTO[]>)NotFound() : (ActionResult<LSVialDTO[]>)Ok(_lsVialMapper.Map<LSVialDTO[]>(lSVials));
         }
 
-        // GET api/values/5
+        // GET api/lsvial/5
         [HttpGet("{id}")]
         public async Task<ActionResult<LSVialDTO>> GetLSVial(int serialNum) {
             var lsVial = await _context.LSVials
@@ -61,8 +60,7 @@ namespace RadonTestsManager.LSVials.Controllers {
             return Ok(_lsVialMapper.Map<LSVialDTO>(lsVial));
         }
 
-        // POST api/values
-        [Authorize]
+        // POST api/lsvial
         [HttpPost("")]
         public async Task<IActionResult> AddNewLSVial([FromBody] LSVialDTO newLSVial) {
             var user = await _context.Users.FindAsync(User.Identity.Name);
@@ -72,36 +70,55 @@ namespace RadonTestsManager.LSVials.Controllers {
                 Status = newLSVial.Status,
                 TestStart = newLSVial.TestStart,
                 TestFinish = newLSVial.TestStart.AddDays(2),
-                JobHistory = new List<Job> { }
+                JobHistory = new List<Job> { },
+                LastUpdatedBy = user.UserName
             };
-            //TODO check for existence of job
-            var newJob = new Job() { JobNumber = newLSVial.JobNumber };
-            lSVial.JobHistory.Add(newJob);
+
+            Job job;
+            bool jobExists = await _context.Jobs.AnyAsync(x => x.JobNumber.Equals(newLSVial.JobNumber));
+            if (jobExists) {
+                job = await _context.Jobs.FirstOrDefaultAsync(y => y.JobNumber == newLSVial.JobNumber);
+            } else {
+                job = new Job() { JobNumber = newLSVial.JobNumber };
+                _context.Jobs.Add(job);
+            }
+
+            lSVial.JobHistory.Add(job);
             _context.LSVials.Add(lSVial);
-            _context.Jobs.Add(newJob);
+
             await _context.SaveChangesAsync();
             return CreatedAtAction(
                 nameof(GetLSVial),
-                new { id = lSVial.LSVialId, name = "ThisIsTheName", status = (lSVial.Status + "updated")});
+                new { id = lSVial.LSVialId, jobNum = job.JobNumber, status = lSVial.Status, dateCreated = DateTime.UtcNow});
         }
 
-        // PUT api/values/5
-        [HttpPut("{id}")]
+        // PUT api/lsvial/5
+        [HttpPut("status/{id}")]
         public async Task<IActionResult> PutLSVialStatus(int id, [FromBody]string value) {
             var lSVial = await _context.LSVials.FindAsync(id);
             lSVial.Status = value;
             await _context.SaveChangesAsync();
             return CreatedAtAction(
                 nameof(PutLSVialStatus),
-                new { id = id, status = ("This is my new status: " + value) });
+                new { id = id, newStatus = ("New status: " + value) });
 
         }
 
-        // DELETE api/values/5
-        // TODO need to delete Job from DB first before removing vial (FK constraint)
+        [HttpPut("job/{id}")]
+        public async Task<IActionResult> AddJobToLSVial(int id, [FromBody]Job job) {
+            var lSVial = await _context.LSVials.FindAsync(id);
+            lSVial.JobHistory.Add(job);
+            await _context.SaveChangesAsync();
+            return CreatedAtAction(
+                nameof(AddJobToLSVial),
+                new { id = id, jobAdded = job });
+        }
+
+        // DELETE api/lsvial/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteLSVial(int id) {
             var lSVial = await _context.LSVials.FindAsync(id);
+            lSVial.JobHistory.Clear();
             _context.LSVials.Remove(lSVial);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(GetAllLSVials));

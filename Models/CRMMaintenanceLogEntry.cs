@@ -9,6 +9,7 @@ namespace RadonTestsManager.CRMs.Models {
         public DateTime EntryDate;
         public string MaintenanceDescription;
         public string ActionsTaken;
+        public string LastUpdatedBy { get; set; }
 
         public ContinuousRadonMonitor CRMId { get; set; }
     }

@@ -15,10 +15,12 @@ using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using RadonTestsManager.DBContext;
 using RadonTestsManager.Utility;
 using RadonTestsManager.Utility.Models;
+using Swashbuckle.AspNetCore.Swagger;
 
 namespace RadonTestsManager {
     public class Startup {
@@ -53,21 +55,38 @@ namespace RadonTestsManager {
                 });
             services.AddCors();
             services.AddApplicationInsightsTelemetry(Configuration);
+
             services.AddMvc(config => {
                 var policy = new AuthorizationPolicyBuilder()
                     .RequireAuthenticatedUser()
                     .Build();
                 config.Filters.Add(new AuthorizeFilter(policy));
+                config.Filters.Add<GlobalExceptionFilter>();
+            });
+
+            services.AddSwaggerGen(c => {
+                c.SwaggerDoc("v1", new Info { Title = "RadonTestsManager.API", Version = "v1" });
+                c.AddSecurityDefinition("Bearer", new ApiKeyScheme {
+                    Name = "Authorization",
+                    In = "header"
+                });
+                c.AddSecurityRequirement(new Dictionary<string, IEnumerable<string>> {
+                    {"Bearer", new string[] {}}
+                });
             });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env) {
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory) {
+            var appInsightLogLevel = Configuration.GetValue<LogLevel>("Logging:Application Insights:LogLevel:Default");
+            loggerFactory.AddApplicationInsights(app.ApplicationServices, appInsightLogLevel);
+
             if (env.IsDevelopment()) {
                 app.UseDeveloperExceptionPage();
-
             }
             app.UseDefaultFiles();
+
+            app.UseCorrelationIdHeader();
 
             FileExtensionContentTypeProvider provider = new FileExtensionContentTypeProvider();
             provider.Mappings[".ts"] = "application/x-typescript";
@@ -90,13 +109,18 @@ namespace RadonTestsManager {
                     defaults: new { controller = "Home", action = "Index" });
             });
 
-            // seems like I shouldn't allow this but the book says to add it
-            //app.UseCors(b => {
-            //    b.WithHeaders();
-            //    b.AllowAnyMethod();
-            //    b.AllowAnyOrigin();
-            //});
-
+             //seems like I shouldn't allow this but the book says to add it
+            app.UseCors(b => {
+                b.WithHeaders();
+                b.AllowAnyMethod();
+                b.AllowAnyOrigin();
+            });
+            if (env.IsDevelopment()) {
+                app.UseSwagger();
+                app.UseSwaggerUI(c => {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "RadonTestsManager.API");
+                });
+            }
             app.Run(async (context) => {
                 await context.Response.WriteAsync("Hello World!");
             });

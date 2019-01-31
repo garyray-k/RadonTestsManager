@@ -2,9 +2,9 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace RadonTestsManager.Model {
-    public class NewJobDTO {
+    public class JobDTO {
         [Required]
-        int JobNumber { get; set; }
+        public int JobNumber { get; set; }
         [Required]
         [MinLength(3)]
         public string ServiceType { get; set; }
@@ -14,6 +14,7 @@ namespace RadonTestsManager.Model {
         public string AccessInfo { get; set; }
         public string SpecialNotes { get; set; }
         public string Driver { get; set; }
-        public DateTime ArrivalTime { get; set; }       
+        public DateTime ArrivalTime { get; set; }
+        public string LastUpdatedBy { get; set; }
     }
 }
