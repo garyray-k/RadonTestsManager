@@ -48,7 +48,7 @@ namespace RadonTestsManager.LSVials.Controllers {
 
         // GET api/lsvial/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<LSVialDTO>> GetLSVial(int serialNum) {
+        public async Task<ActionResult<LSVialDTO>> GetLSVialBySerialNumber(int serialNum) {
             var lsVial = await _context.LSVials
                     .Include(p => p.LSVialId)
                     .Include(p => p.Status)
@@ -63,15 +63,17 @@ namespace RadonTestsManager.LSVials.Controllers {
         // POST api/lsvial
         [HttpPost("")]
         public async Task<IActionResult> AddNewLSVial([FromBody] LSVialDTO newLSVial) {
+            if (await _context.LSVials.AnyAsync(x => x.SerialNumber.Equals(newLSVial.SerialNumber))) {
+                return BadRequest("Error: A LS Vial already exists with that Serial Number.");
+            }
             var user = await _context.Users.FindAsync(User.Identity.Name);
-
             var lSVial = new LSVial() {
                 SerialNumber = newLSVial.SerialNumber,
                 Status = newLSVial.Status,
                 TestStart = newLSVial.TestStart,
                 TestFinish = newLSVial.TestStart.AddDays(2),
                 JobHistory = new List<Job> { },
-                LastUpdatedBy = user.UserName
+                LastUpdatedBy = user.UserName + DateTime.UtcNow.ToShortDateString()
             };
 
             Job job;
@@ -80,38 +82,43 @@ namespace RadonTestsManager.LSVials.Controllers {
                 job = await _context.Jobs.FirstOrDefaultAsync(y => y.JobNumber == newLSVial.JobNumber);
             } else {
                 job = new Job() { JobNumber = newLSVial.JobNumber };
-                _context.Jobs.Add(job);
+                await _context.Jobs.AddAsync(job);
             }
 
             lSVial.JobHistory.Add(job);
-            _context.LSVials.Add(lSVial);
+            await _context.LSVials.AddAsync(lSVial);
 
             await _context.SaveChangesAsync();
             return CreatedAtAction(
-                nameof(GetLSVial),
-                new { id = lSVial.LSVialId, jobNum = job.JobNumber, status = lSVial.Status, dateCreated = DateTime.UtcNow});
+                nameof(GetLSVialBySerialNumber),
+                new { sn = lSVial.SerialNumber, jobNum = job.JobNumber, user, dateCreated = DateTime.UtcNow});
         }
 
         // PUT api/lsvial/5
-        [HttpPut("status/{id}")]
-        public async Task<IActionResult> PutLSVialStatus(int id, [FromBody]string value) {
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateLSVialWithoutJobAddition(int id, [FromBody]LSVialDTO updatedLSVial) {
             var lSVial = await _context.LSVials.FindAsync(id);
-            lSVial.Status = value;
+            lSVial.SerialNumber = updatedLSVial.SerialNumber;
+            lSVial.Status = updatedLSVial.Status;
+            lSVial.TestStart = updatedLSVial.TestStart;
+            lSVial.TestFinish = updatedLSVial.TestStart.AddDays(2);
+            var user = await _context.Users.FindAsync(User.Identity.Name);
+            lSVial.LastUpdatedBy = user.UserName + DateTime.UtcNow.ToShortDateString();
             await _context.SaveChangesAsync();
             return CreatedAtAction(
-                nameof(PutLSVialStatus),
-                new { id = id, newStatus = ("New status: " + value) });
+                nameof(UpdateLSVialWithoutJobAddition),
+                _lsVialMapper.Map<LSVialDTO>(lSVial));
 
         }
 
-        [HttpPut("job/{id}")]
-        public async Task<IActionResult> AddJobToLSVial(int id, [FromBody]Job job) {
+        [HttpPut("addjob/{id}")]
+        public async Task<IActionResult> AddJobToLSVial(int id, [FromBody]JobDTO job) {
             var lSVial = await _context.LSVials.FindAsync(id);
             lSVial.JobHistory.Add(job);
             await _context.SaveChangesAsync();
             return CreatedAtAction(
                 nameof(AddJobToLSVial),
-                new { id = id, jobAdded = job });
+                new { sn = lSVial.SerialNumber, jobAdded = job });
         }
 
         // DELETE api/lsvial/5
