@@ -32,7 +32,16 @@ namespace RadonTestsManager.CRMs.Controllers {
                     .ForMember(dto => dto.TestStart, opt => opt.MapFrom(crm => crm.TestStart))
                     .ForMember(dto => dto.TestFinish, opt => opt.MapFrom(crm => crm.TestFinish))
                     .ForMember(dto => dto.Status, opt => opt.MapFrom(crm => crm.Status));
-                });
+                cfg.CreateMap<ContinuousRadonMonitorDTO, ContinuousRadonMonitor>()
+                    .ForMember(dto => dto.MonitorNumber, opt => opt.MapFrom(crm => crm.MonitorNumber))
+                    .ForMember(dto => dto.SerialNumber, opt => opt.MapFrom(crm => crm.SerialNumber))
+                    .ForMember(dto => dto.LastCalibrationDate, opt => opt.MapFrom(crm => crm.LastCalibrationDate))
+                    .ForMember(dto => dto.PurchaseDate, opt => opt.MapFrom(crm => crm.PurchaseDate))
+                    .ForMember(dto => dto.LastBatteryChangeDate, opt => opt.MapFrom(crm => crm.LastBatteryChangeDate))
+                    .ForMember(dto => dto.TestStart, opt => opt.MapFrom(crm => crm.TestStart))
+                    .ForMember(dto => dto.TestFinish, opt => opt.MapFrom(crm => crm.TestFinish))
+                    .ForMember(dto => dto.Status, opt => opt.MapFrom(crm => crm.Status));
+            });
             _cRMMapper = config.CreateMapper();
         }
 
@@ -63,17 +72,20 @@ namespace RadonTestsManager.CRMs.Controllers {
                 return BadRequest("Error: A CRM with that Monitor Number already exists.");
             }
             var user = await _context.Users.FindAsync(User.Identity.Name);
-            var cRM = new ContinuousRadonMonitor {
-                MonitorNumber = newCRM.MonitorNumber,
-                SerialNumber = newCRM.SerialNumber,
-                LastCalibrationDate = newCRM.LastCalibrationDate,
-                PurchaseDate = newCRM.PurchaseDate,
-                LastBatteryChangeDate = newCRM.LastBatteryChangeDate,
-                TestStart = newCRM.TestStart,
-                TestFinish = newCRM.TestStart.AddDays(2),
-                Status = newCRM.Status,
-                LastUpdatedBy = user.UserName + DateTime.UtcNow.ToShortDateString()
-            };
+            //var cRM = new ContinuousRadonMonitor {
+            //    MonitorNumber = newCRM.MonitorNumber,
+            //    SerialNumber = newCRM.SerialNumber,
+            //    LastCalibrationDate = newCRM.LastCalibrationDate,
+            //    PurchaseDate = newCRM.PurchaseDate,
+            //    LastBatteryChangeDate = newCRM.LastBatteryChangeDate,
+            //    TestStart = newCRM.TestStart,
+            //    TestFinish = newCRM.TestStart.AddDays(2),
+            //    Status = newCRM.Status,
+            //    LastUpdatedBy = user.UserName + DateTime.UtcNow.ToShortDateString()
+            //};
+            var cRM = _cRMMapper.Map<ContinuousRadonMonitor>(newCRM);
+            cRM.TestFinish = cRM.TestStart.AddDays(2);
+            cRM.LastUpdatedBy = user.UserName + DateTime.UtcNow.ToShortDateString();
 
             await _context.ContinuousRadonMonitors.AddAsync(cRM);
             await _context.SaveChangesAsync();
@@ -83,10 +95,11 @@ namespace RadonTestsManager.CRMs.Controllers {
                 new { cRM.SerialNumber, cRM.MonitorNumber, user.UserName, dateCreated = DateTime.UtcNow.ToShortDateString() });
         }
 
-        // PUT api/values/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody]string value) {
-        }
+        //[HttpPut("{id}")]
+        //public async Task<IActionResult> UpdateCRM(int id, [FromBody]ContinuousRadonMonitorDTO updatedCRM) {
+        //    //var cRM = await _context.ContinuousRadonMonitors.FindAsync(id);
+        //    //cRM.   
+        //}
 
         // DELETE api/values/5
         [HttpDelete("{id}")]
