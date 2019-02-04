@@ -112,8 +112,9 @@ namespace RadonTestsManager.LSVials.Controllers {
         }
 
         [HttpPut("addjob/{id}")]
-        public async Task<IActionResult> AddJobToLSVial(int id, [FromBody]JobDTO job) {
+        public async Task<IActionResult> AddJobToLSVial(int id, [FromBody]JobDTO newJob) {
             var lSVial = await _context.LSVials.FindAsync(id);
+            var job = await _context.Jobs.FirstOrDefaultAsync(j => j.JobNumber == newJob.JobNumber);
             lSVial.JobHistory.Add(job);
             await _context.SaveChangesAsync();
             return CreatedAtAction(

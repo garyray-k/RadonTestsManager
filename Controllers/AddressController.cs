@@ -7,10 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace RadonTestsManager.Controllers {
-    public class HomeController : Controller {
+    public class AddressController : Controller {
         // GET: /<controller>/
-        [Route("Home/Index")]
-        [HttpGet]
         public IActionResult Index() {
             return View();
         }

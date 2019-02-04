@@ -13,6 +13,5 @@ namespace RadonTestsManager.Controllers {
         public DateTime TestStart { get; set; }
         public DateTime? TestFinish { get; set; }
         public string Status { get; set; }
-        public string LastUpdatedBy { get; set; }
     }
 }

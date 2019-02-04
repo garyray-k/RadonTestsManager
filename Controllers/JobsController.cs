@@ -45,15 +45,12 @@ namespace RadonTestsManager.Controllers {
             _logger = logger;
         }
 
-        // GET: api/jobs
         [HttpGet]
         public async Task<ActionResult<JobDTO[]>> GetAllJobs() {
             List<Job> jobs = await _context.Jobs.ToListAsync();
             return jobs == null ? (ActionResult<JobDTO[]>)NotFound() : (ActionResult<JobDTO[]>)Ok(_jobsMapper.Map<JobDTO[]>(jobs));
-
         }
 
-        // GET api/values/5
         [HttpGet("{jobNum}")]
         public async Task<ActionResult<JobDTO>> GetJobByNumber(int jobNum) {
             var job = await _context.Jobs
@@ -61,14 +58,13 @@ namespace RadonTestsManager.Controllers {
             return job == null ? (ActionResult<JobDTO>)NotFound() : (ActionResult<JobDTO>)Ok(_jobsMapper.Map<JobDTO>(job));
         }
 
-        // POST api/values
         [HttpPost("")]
         public async Task<ActionResult<JobDTO>> AddNewJob([FromBody] JobDTO newJob) {
             if (await _context.Jobs.AnyAsync(x => x.JobNumber.Equals(newJob.JobNumber))) {
                 return BadRequest("Error: A Job already exists with that Job Number.");
             }
             if (newJob.DeviceType != "LS Vial" || newJob.DeviceType != "CRM") {
-                return BadRequest("Error: Device Type must be 'LS Vial' or 'CRM'.")
+                return BadRequest("Error: Device Type must be 'LS Vial' or 'CRM'.");
             }
             var user = await _context.Users.FindAsync(User.Identity.Name);
             var job = new Job() {
@@ -88,11 +84,10 @@ namespace RadonTestsManager.Controllers {
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(
-                nameof(GetAllJobs),
-                new { jn = job.JobNumber, user, dateCreated = DateTime.UtcNow });
+                nameof(AddNewJob),
+                new { jn = job.JobNumber, user.UserName, dateCreated = DateTime.UtcNow.ToShortDateString() });
         }
 
-        // PUT api/values/5
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateJob(int id, [FromBody]JobDTO updatedJob) {
             var job = await _context.Jobs.FindAsync(id);
@@ -158,10 +153,9 @@ namespace RadonTestsManager.Controllers {
             await _context.SaveChangesAsync();
             return CreatedAtAction(
                 nameof(UpdateAddressOfJob),
-                new { job.JobNumber });
+                new { job.JobNumber, address.AddressId });
         }
 
-        // DELETE api/values/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteJob(int id) {
             var job = await _context.Jobs.FindAsync(id);
