@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using RadonTestsManager.CRMs.Models;
 using RadonTestsManager.DBContext;
 using RadonTestsManager.Jobs.Models;
-using RadonTestsManager.LSVials.Models;
 using RadonTestsManager.Model;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -35,7 +32,17 @@ namespace RadonTestsManager.Controllers {
                     .ForMember(dto => dto.SpecialNotes, opt => opt.MapFrom(job => job.SpecialNotes))
                     .ForMember(dto => dto.Driver, opt => opt.MapFrom(job => job.Driver))
                     .ForMember(dto => dto.ArrivalTime, opt => opt.MapFrom(job => job.ArrivalTime));
-                });
+                cfg.CreateMap<JobDTO, Job>()
+                    .ForMember(dto => dto.JobNumber, opt => opt.MapFrom(job => job.JobNumber))
+                    .ForMember(dto => dto.ServiceType, opt => opt.MapFrom(job => job.ServiceType))
+                    .ForMember(dto => dto.JobAddress, opt => opt.MapFrom(job => job.JobAddress))
+                    .ForMember(dto => dto.ServiceDeadLine, opt => opt.MapFrom(job => job.ServiceDeadLine))
+                    .ForMember(dto => dto.DeviceType, opt => opt.MapFrom(job => job.DeviceType))
+                    .ForMember(dto => dto.AccessInfo, opt => opt.MapFrom(job => job.AccessInfo))
+                    .ForMember(dto => dto.SpecialNotes, opt => opt.MapFrom(job => job.SpecialNotes))
+                    .ForMember(dto => dto.Driver, opt => opt.MapFrom(job => job.Driver))
+                    .ForMember(dto => dto.ArrivalTime, opt => opt.MapFrom(job => job.ArrivalTime));
+            });
 
             _jobsMapper = config.CreateMapper();
             }
@@ -67,18 +74,9 @@ namespace RadonTestsManager.Controllers {
                 return BadRequest("Error: Device Type must be 'LS Vial' or 'CRM'.");
             }
             var user = await _context.Users.FindAsync(User.Identity.Name);
-            var job = new Job() {
-                JobNumber = newJob.JobNumber,
-                ServiceType = newJob.ServiceType,
-                JobAddress = newJob.JobAddress,
-                ServiceDeadLine = newJob.ServiceDeadLine,
-                DeviceType = newJob.DeviceType,
-                AccessInfo = newJob.AccessInfo,
-                SpecialNotes = newJob.SpecialNotes,
-                Driver = newJob.Driver,
-                ArrivalTime = newJob.ArrivalTime,
-                LastUpdatedBy = user.UserName + DateTime.UtcNow.ToShortDateString(),
-            };
+            var job = _jobsMapper.Map<Job>(newJob);
+
+            job.LastUpdatedBy = user.UserName + DateTime.UtcNow.ToShortDateString();
 
             await _context.Jobs.AddAsync(job);
             await _context.SaveChangesAsync();
@@ -100,7 +98,7 @@ namespace RadonTestsManager.Controllers {
             job.Driver = updatedJob.Driver;
             job.ArrivalTime = updatedJob.ArrivalTime;
             var user = await _context.Users.FindAsync(User.Identity.Name);
-            job.LastUpdatedBy = user.UserName;
+            job.LastUpdatedBy = user.UserName + DateTime.UtcNow.ToShortDateString();
 
             await _context.SaveChangesAsync();
             return CreatedAtAction(

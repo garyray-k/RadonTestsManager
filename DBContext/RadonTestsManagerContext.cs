@@ -15,6 +15,7 @@ namespace RadonTestsManager.DBContext {
         public DbSet<Job> Jobs { get; set; }
         public DbSet<ContinuousRadonMonitor> ContinuousRadonMonitors { get; set; }
         public DbSet<LSVial> LSVials { get; set; }
+        public DbSet<CRMMaintenanceLogEntry> CRMMaintenanceLogs { get; set; }
 
         public RadonTestsManagerContext(DbContextOptions<RadonTestsManagerContext> options) : base(options) {
         
