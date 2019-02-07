@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using RadonTestsManager.DBContext;
+using RadonTestsManager.DTOs;
 using RadonTestsManager.Jobs.Models;
 using RadonTestsManager.Model;
 
@@ -132,18 +133,26 @@ namespace RadonTestsManager.Controllers {
         }
 
         [HttpPut("updateaddress/{id}")]
-        public async Task<IActionResult> UpdateAddressOfJob(int id, [FromBody]Address newAddress) {
-            bool addressExists = await _context.Addresses.AnyAsync(x => x == newAddress);
+        public async Task<IActionResult> UpdateAddressOfJob(int id, [FromBody]AddressDTO newAddress) {
+            bool addressExists = await _context.Addresses.AnyAsync(x => x.AddressId == newAddress.AddressId);
             var job = await _context.Jobs.FindAsync(id);
             Address address;
             if (addressExists) {
-                address = await _context.Addresses.FirstOrDefaultAsync(x => x == newAddress);
-                job.JobAddress = address;
+                address = await _context.Addresses.FirstOrDefaultAsync(x => x.AddressId == newAddress.AddressId);
             } else {
-                job.JobAddress = newAddress;
-                await _context.Addresses.AddAsync(newAddress);
+                address = new Address() {
+                    CustomerName = newAddress.CustomerName,
+                    Address1 = newAddress.Address1,
+                    Address2 = newAddress.Address2,
+                    City = newAddress.City,
+                    Country = newAddress.Country,
+                    PostalCode = newAddress.PostalCode,
+                    State = newAddress.State
+            };
+                job.JobAddress = address;
+                await _context.Addresses.AddAsync(address);
                 await _context.SaveChangesAsync();
-                address = await _context.Addresses.FirstOrDefaultAsync(x => x == newAddress);
+                address = await _context.Addresses.FirstOrDefaultAsync(x => x.AddressId == newAddress.AddressId);
             }
             address.JobHistory.Add(job);
             var user = await _context.Users.FindAsync(User.Identity.Name);

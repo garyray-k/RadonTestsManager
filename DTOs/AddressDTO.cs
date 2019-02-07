@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace RadonTestsManager.DTOs {
     public class AddressDTO {
+        [Required]
         public int AddressId { get; set; }
         public string CustomerName { get; set; }
         [Required]

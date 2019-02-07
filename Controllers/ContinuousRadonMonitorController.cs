@@ -120,14 +120,26 @@ namespace RadonTestsManager.CRMs.Controllers {
         }
 
         [HttpPut("jobs/{id}")]
-        public async Task<IActionResult> AddJobtoCRM(int id, [FromBody]Job jobToAdd) {
-        
+        public async Task<IActionResult> AddJobtoCRM(int id, [FromBody]JobDTO jobToAdd) {
+            var cRM = await _context.ContinuousRadonMonitors.FindAsync(id);
+            var user = await _context.Users.FindAsync(User.Identity.Name);
+            bool jobExists = await _context.Jobs.AnyAsync(x => x.JobNumber == jobToAdd.JobNumber);
+            if (jobExists) {
+                cRM.JobHistory.Add(await _context.Jobs.FindAsync(jobToAdd.JobNumber));
+            } else {
+                return BadRequest("Error: No Job with that Job Number exists.");
+            }
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(
+                nameof(AddJobtoCRM),
+                new { cRM.CRMId, jobToAdd.JobNumber, user.UserName, date = DateTime.UtcNow.ToShortDateString() });
         }
 
         [HttpPut("maintenance/{id}")]
         public async Task<IActionResult> AddMaintenanceEntrytoCRM(int id, [FromBody]CRMMaintenanceLogEntryDTO logEntry) {
             var cRM = await _context.ContinuousRadonMonitors.FindAsync(id);
-            var user = await _context.Users.FindAsync(User.Identity.Name); 
+            var user = await _context.Users.FindAsync(User.Identity.Name);
             var entry = new CRMMaintenanceLogEntry() {
                 EntryDate = logEntry.EntryDate,
                 MaintenanceDescription = logEntry.MaintenanceDescription,
@@ -166,9 +178,18 @@ namespace RadonTestsManager.CRMs.Controllers {
                 new { cRM.SerialNumber, address.AddressId });
         }
 
-        // DELETE api/values/5
         [HttpDelete("{id}")]
-        public void Delete(int id) {
+        public async Task<IActionResult> Delete(int id) {
+            var cRM = await _context.ContinuousRadonMonitors.FindAsync(id);
+            cRM.Location = null;
+            cRM.MaintenanceLog.Clear();
+            cRM.JobHistory.Clear();
+            cRM.MaintenanceLog = null;
+            cRM.JobHistory = null;
+            await _context.SaveChangesAsync();
+            _context.ContinuousRadonMonitors.Remove(cRM);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(GetAllCRMs));
         }
     }
 }
