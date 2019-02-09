@@ -69,9 +69,11 @@ namespace RadonTestsManager.Controllers {
         [HttpPost("")]
         public async Task<ActionResult<JobDTO>> AddNewJob([FromBody] JobDTO newJob) {
             if (await _context.Jobs.AnyAsync(x => x.JobNumber.Equals(newJob.JobNumber))) {
+                _logger.LogWarning("An existing Job was sent to AddNewJob.");
                 return BadRequest("Error: A Job already exists with that Job Number.");
             }
             if (newJob.DeviceType != "LS Vial" || newJob.DeviceType != "CRM") {
+                _logger.LogWarning("Incorrect DeviceType input. Only 'LS Vial' and 'CRM' is acceptable.");
                 return BadRequest("Error: Device Type must be 'LS Vial' or 'CRM'.");
             }
             var user = await _context.Users.FindAsync(User.Identity.Name);
