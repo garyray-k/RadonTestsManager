@@ -26,23 +26,31 @@ namespace RadonTestsManager.Controllers {
                 cfg.CreateMap<Job, JobDTO>()
                     .ForMember(dto => dto.JobNumber, opt => opt.MapFrom(job => job.JobNumber))
                     .ForMember(dto => dto.ServiceType, opt => opt.MapFrom(job => job.ServiceType))
-                    .ForMember(dto => dto.JobAddress, opt => opt.MapFrom(job => job.JobAddress))
+                    .ForMember(dto => dto.ServiceDate, opt => opt.MapFrom(job => job.ServiceDate))
                     .ForMember(dto => dto.ServiceDeadLine, opt => opt.MapFrom(job => job.ServiceDeadLine))
                     .ForMember(dto => dto.DeviceType, opt => opt.MapFrom(job => job.DeviceType))
                     .ForMember(dto => dto.AccessInfo, opt => opt.MapFrom(job => job.AccessInfo))
                     .ForMember(dto => dto.SpecialNotes, opt => opt.MapFrom(job => job.SpecialNotes))
                     .ForMember(dto => dto.Driver, opt => opt.MapFrom(job => job.Driver))
-                    .ForMember(dto => dto.ArrivalTime, opt => opt.MapFrom(job => job.ArrivalTime));
+                    .ForMember(dto => dto.TimeOfDay, opt => opt.MapFrom(job => job.TimeOfDay))
+                    .ForMember(dto => dto.ArrivalTime, opt => opt.MapFrom(job => job.ArrivalTime))
+                    .ForMember(dto => dto.Confirmed, opt => opt.MapFrom(job => job.Confirmed))
+                    .ForMember(dto => dto.Completed, opt => opt.MapFrom(job => job.Completed))
+                    .ForMember(dto => dto.JobAddress, opt => opt.MapFrom(job => job.JobAddress));
                 cfg.CreateMap<JobDTO, Job>()
                     .ForMember(dto => dto.JobNumber, opt => opt.MapFrom(job => job.JobNumber))
                     .ForMember(dto => dto.ServiceType, opt => opt.MapFrom(job => job.ServiceType))
-                    .ForMember(dto => dto.JobAddress, opt => opt.MapFrom(job => job.JobAddress))
+                    .ForMember(dto => dto.ServiceDate, opt => opt.MapFrom(job => job.ServiceDate))
                     .ForMember(dto => dto.ServiceDeadLine, opt => opt.MapFrom(job => job.ServiceDeadLine))
                     .ForMember(dto => dto.DeviceType, opt => opt.MapFrom(job => job.DeviceType))
                     .ForMember(dto => dto.AccessInfo, opt => opt.MapFrom(job => job.AccessInfo))
                     .ForMember(dto => dto.SpecialNotes, opt => opt.MapFrom(job => job.SpecialNotes))
                     .ForMember(dto => dto.Driver, opt => opt.MapFrom(job => job.Driver))
-                    .ForMember(dto => dto.ArrivalTime, opt => opt.MapFrom(job => job.ArrivalTime));
+                    .ForMember(dto => dto.TimeOfDay, opt => opt.MapFrom(job => job.TimeOfDay))
+                    .ForMember(dto => dto.ArrivalTime, opt => opt.MapFrom(job => job.ArrivalTime))
+                    .ForMember(dto => dto.Confirmed, opt => opt.MapFrom(job => job.Confirmed))
+                    .ForMember(dto => dto.Completed, opt => opt.MapFrom(job => job.Completed))
+                    .ForMember(dto => dto.JobAddress, opt => opt.MapFrom(job => job.JobAddress));
             });
 
             _jobsMapper = config.CreateMapper();
@@ -72,7 +80,7 @@ namespace RadonTestsManager.Controllers {
                 _logger.LogWarning("An existing Job was sent to AddNewJob.");
                 return BadRequest("Error: A Job already exists with that Job Number.");
             }
-            if (newJob.DeviceType != "LS Vial" || newJob.DeviceType != "CRM") {
+            if (newJob.DeviceType != "LS Vial" || newJob.DeviceType != "CRM" || newJob.DeviceType != "Unkown") {
                 _logger.LogWarning("Incorrect DeviceType input. Only 'LS Vial' and 'CRM' is acceptable.");
                 return BadRequest("Error: Device Type must be 'LS Vial' or 'CRM'.");
             }
@@ -92,17 +100,9 @@ namespace RadonTestsManager.Controllers {
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateJob(int id, [FromBody]JobDTO updatedJob) {
             var job = await _context.Jobs.FindAsync(id);
-            job.JobNumber = updatedJob.JobNumber;
-            job.ServiceType = updatedJob.ServiceType;
-            job.ServiceDeadLine = updatedJob.ServiceDeadLine;
-            job.DeviceType = updatedJob.DeviceType;
-            job.AccessInfo = updatedJob.AccessInfo;
-            job.SpecialNotes = updatedJob.SpecialNotes;
-            job.Driver = updatedJob.Driver;
-            job.ArrivalTime = updatedJob.ArrivalTime;
+            job = _jobsMapper.Map<Job>(updatedJob);
             var user = await _context.Users.FindAsync(User.Identity.Name);
             job.LastUpdatedBy = user.UserName + DateTime.UtcNow.ToShortDateString();
-
             await _context.SaveChangesAsync();
             return CreatedAtAction(
                 nameof(UpdateJob),
