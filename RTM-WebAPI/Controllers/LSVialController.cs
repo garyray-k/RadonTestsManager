@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
@@ -8,9 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using RadonTestsManager.DBContext;
-using RadonTestsManager.Jobs.Models;
-using RadonTestsManager.LSVials.Models;
-using RadonTestsManager.Model;
+using RadonTestsManager.DTOs;
+using RadonTestsManager.Models;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 

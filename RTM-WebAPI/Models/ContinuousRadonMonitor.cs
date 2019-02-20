@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using RadonTestsManager.Jobs.Models;
-using RadonTestsManager.Model;
 
 namespace RadonTestsManager.Models {
     public class ContinuousRadonMonitor {

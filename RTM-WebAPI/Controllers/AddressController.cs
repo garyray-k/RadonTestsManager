@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
@@ -8,7 +7,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using RadonTestsManager.DBContext;
 using RadonTestsManager.DTOs;
-using RadonTestsManager.Model;
+using RadonTestsManager.Models;
+using RTM.Server.Utility;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -30,8 +30,8 @@ namespace RadonTestsManager.Controllers {
                     .ForMember(dto => dto.City, opt => opt.MapFrom(addr => addr.City))
                     .ForMember(dto => dto.Country, opt => opt.MapFrom(addr => addr.Country))
                     .ForMember(dto => dto.PostalCode, opt => opt.MapFrom(addr => addr.PostalCode))
-                    .ForMember(dto => dto.State, opt => opt.MapFrom(addr => addr.State))
-                    .ForMember(dto => dto.JobHistory, opt => opt.MapFrom(addr => addr.JobHistory));
+                    .ForMember(dto => dto.State, opt => opt.MapFrom(addr => addr.State));
+                cfg.CreateMap<List<Job>, List<int>>().ConvertUsing(new JobHistoryToDTOConverter());
                 cfg.CreateMap<AddressDTO, Address>()
                     .ForMember(addr => addr.AddressId, opt => opt.Ignore())
                     .ForMember(addr => addr.CustomerName, opt => opt.MapFrom(dto => dto.CustomerName))
@@ -54,14 +54,18 @@ namespace RadonTestsManager.Controllers {
         [HttpGet]
         public async Task<ActionResult<AddressDTO[]>> GetAllAddresses() {
             List<Address> addresses = await _context.Addresses.ToListAsync();
-            return addresses == null ? (ActionResult<AddressDTO[]>)NotFound() : (ActionResult<AddressDTO[]>)Ok(_addresssMapper.Map<AddressDTO[]>(addresses));
+            return addresses == null 
+                ? (ActionResult<AddressDTO[]>)NotFound() 
+                : (ActionResult<AddressDTO[]>)Ok(_addresssMapper.Map<AddressDTO[]>(addresses));
         }
 
         [HttpGet("{addressId}")]
         public async Task<ActionResult<AddressDTO>> GetAddressById(int addressId) {
             var address = await _context.Addresses
                 .FirstOrDefaultAsync(j => j.AddressId == addressId);
-            return address == null ? (ActionResult<AddressDTO>)NotFound() : (ActionResult<AddressDTO>)Ok(_addresssMapper.Map<AddressDTO>(address));
+            return address == null 
+                ? (ActionResult<AddressDTO>)NotFound() 
+                : (ActionResult<AddressDTO>)Ok(_addresssMapper.Map<AddressDTO>(address));
         }
 
         [HttpPost("")]
@@ -84,7 +88,7 @@ namespace RadonTestsManager.Controllers {
             await _context.SaveChangesAsync();
             return CreatedAtAction(
                 nameof(UpdateAddress),
-                _addresssMapper.Map<AddressDTO>(oldAddress));
+                new { updatedAddress });
         }
 
         [HttpPut("jobs/{id}")]
@@ -100,7 +104,7 @@ namespace RadonTestsManager.Controllers {
 
             return CreatedAtAction(
                 nameof(AddJobtoAddress),
-                new { address.AddressId, jobToAdd.JobNumber });
+                new { jobToAdd });
         }
 
         [HttpDelete("{id}")]

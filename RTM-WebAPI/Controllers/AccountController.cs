@@ -10,8 +10,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using RadonTestsManager.DTOs;
-using RadonTestsManager.Utility.Models;
-using RadonTestsManager.Utility.Results;
+using RadonTestsManager.Models;
+using RadonTestsManager.Utility;
 
 namespace RadonTestsManager.Controllers {
     [Produces("application/json")]

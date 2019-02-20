@@ -1,13 +1,8 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using RadonTestsManager.CRMs.Models;
-using RadonTestsManager.Jobs.Models;
-using RadonTestsManager.LSVials.Models;
-using RadonTestsManager.Model;
-using RadonTestsManager.Utility.Models;
+using RadonTestsManager.Models;
 
 namespace RadonTestsManager.DBContext {
     public class RadonTestsManagerContext : IdentityDbContext<User> {
@@ -20,12 +15,17 @@ namespace RadonTestsManager.DBContext {
         public RadonTestsManagerContext(DbContextOptions<RadonTestsManagerContext> options) : base(options) {
         
         }
+
         public async Task SeedRolesAsync(RoleManager<IdentityRole> roleManager) {
             if (!await roleManager.RoleExistsAsync("Admin")) {
                 var admin = new IdentityRole("Admin");
                 await roleManager.CreateAsync(admin);
             }
         }
+
+        //public async Task SeedTestData() {
+
+        //}
     }
 
 

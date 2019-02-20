@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using RadonTestsManager.Jobs.Models;
 
 namespace RadonTestsManager.Models {
     public class LSVial {
@@ -14,7 +13,5 @@ namespace RadonTestsManager.Models {
 
         public List<Job> JobHistory { get; set; }
 
-        public LSVial() {
-        }
     }
 }

@@ -1,7 +1,4 @@
 ﻿using System;
-using RadonTestsManager.CRMs.Models;
-using RadonTestsManager.LSVials.Models;
-using RadonTestsManager.Model;
 
 namespace RadonTestsManager.Models {
     public class Job {

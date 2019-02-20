@@ -7,12 +7,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using RadonTestsManager.Controllers;
-using RadonTestsManager.CRMs.Models;
 using RadonTestsManager.DBContext;
 using RadonTestsManager.DTOs;
-using RadonTestsManager.Jobs.Models;
-using RadonTestsManager.Model;
+using RadonTestsManager.Models;
+using RTM.Server.Utility;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -35,6 +33,7 @@ namespace RadonTestsManager.Controllers {
                     .ForMember(dto => dto.TestStart, opt => opt.MapFrom(crm => crm.TestStart))
                     .ForMember(dto => dto.TestFinish, opt => opt.MapFrom(crm => crm.TestFinish))
                     .ForMember(dto => dto.Status, opt => opt.MapFrom(crm => crm.Status));
+                cfg.CreateMap<List<Job>, List<int>>().ConvertUsing(new JobHistoryToDTOConverter());
                 cfg.CreateMap<ContinuousRadonMonitorDTO, ContinuousRadonMonitor>()
                     .ForMember(crm => crm.MonitorNumber, opt => opt.MapFrom(dto => dto.MonitorNumber))
                     .ForMember(crm => crm.SerialNumber, opt => opt.MapFrom(dto => dto.SerialNumber))
@@ -78,9 +77,9 @@ namespace RadonTestsManager.Controllers {
         }
 
         [HttpGet("jobs/{id}")]
-        public async Task<ActionResult<Job[]>> GetJobsOfCRM(int id) {
+        public async Task<ActionResult<List<Job>[]>> GetJobsOfCRM(int id) {
             var jobs = await _context.Jobs.Where(x => x.ContinousRadonMonitor.CRMId == id).ToArrayAsync();
-            return (ActionResult<Job[]>)Ok(jobs);
+            return (ActionResult<List<Job>[]>)Ok(jobs);
         }
 
         [HttpPost("")]

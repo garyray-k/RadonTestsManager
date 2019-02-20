@@ -1,7 +1,6 @@
-﻿using System;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 
-namespace RadonTestsManager.Utility.Models {
+namespace RadonTestsManager.Models {
     public class User : IdentityUser {
         public User() {
         }

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using RTM.Server.Utility;
 
 namespace RadonTestsManager.DTOs {
     public class ContinuousRadonMonitorDTO {
@@ -16,5 +18,8 @@ namespace RadonTestsManager.DTOs {
         public DateTime? TestFinish { get; set; }
         [MaxLength(255)]
         public string Status { get; set; }
+        public AddressDTO Addres { get; set; }
+        public List<CRMMaintenanceLogEntryDTO> MaintenanceLog { get; set; }
+        public List<int> JobHistory { get; set; }
     }
 }

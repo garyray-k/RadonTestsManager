@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RadonTestsManager", "RadonTestsManager\RadonTestsManager.csproj", "{79874023-64A8-4DAD-928C-64E482085237}"
-EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{F3F35718-3AE1-4E81-9DC6-EFB129D3F997}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RTM-Blazor.Client", "RTM-Blazor.Client\RTM-Blazor.Client.csproj", "{98D459D4-1A5E-4177-A9C2-A3915A40F55C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RTM.Server", "RTM-WebAPI\RTM.Server.csproj", "{FB6E0641-27DA-4FBB-9E5C-DE068D964859}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -14,12 +14,6 @@ Global
 		Default|Any CPU = Default|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{79874023-64A8-4DAD-928C-64E482085237}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{79874023-64A8-4DAD-928C-64E482085237}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{79874023-64A8-4DAD-928C-64E482085237}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{79874023-64A8-4DAD-928C-64E482085237}.Release|Any CPU.Build.0 = Release|Any CPU
-		{79874023-64A8-4DAD-928C-64E482085237}.Default|Any CPU.ActiveCfg = Debug|Any CPU
-		{79874023-64A8-4DAD-928C-64E482085237}.Default|Any CPU.Build.0 = Debug|Any CPU
 		{F3F35718-3AE1-4E81-9DC6-EFB129D3F997}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F3F35718-3AE1-4E81-9DC6-EFB129D3F997}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F3F35718-3AE1-4E81-9DC6-EFB129D3F997}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -32,5 +26,11 @@ Global
 		{98D459D4-1A5E-4177-A9C2-A3915A40F55C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{98D459D4-1A5E-4177-A9C2-A3915A40F55C}.Default|Any CPU.ActiveCfg = Debug|Any CPU
 		{98D459D4-1A5E-4177-A9C2-A3915A40F55C}.Default|Any CPU.Build.0 = Debug|Any CPU
+		{FB6E0641-27DA-4FBB-9E5C-DE068D964859}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB6E0641-27DA-4FBB-9E5C-DE068D964859}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FB6E0641-27DA-4FBB-9E5C-DE068D964859}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FB6E0641-27DA-4FBB-9E5C-DE068D964859}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FB6E0641-27DA-4FBB-9E5C-DE068D964859}.Default|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB6E0641-27DA-4FBB-9E5C-DE068D964859}.Default|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 EndGlobal

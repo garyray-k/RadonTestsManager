@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -18,8 +15,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using RadonTestsManager.DBContext;
+using RadonTestsManager.Models;
 using RadonTestsManager.Utility;
-using RadonTestsManager.Utility.Models;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace RadonTestsManager {
