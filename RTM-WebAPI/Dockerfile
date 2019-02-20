@@ -1,21 +1,16 @@
-FROM microsoft/dotnet:2.1-aspnetcore-runtime AS base
+FROM microsoft/dotnet:sdk AS build-env
 WORKDIR /app
-EXPOSE 80
 
-FROM microsoft/dotnet:2.1-sdk AS build
-WORKDIR /src
-COPY RadonTestsManager/RadonTestsManager.csproj RadonTestsManager/
-RUN dotnet restore RadonTestsManager/RadonTestsManager.csproj
-COPY . .
-WORKDIR /src/RadonTestsManager
+# Copy csproj and restore as distinct layers
+COPY *.csproj ./
+RUN dotnet restore
 
-RUN dotnet build RadonTestsManager.csproj -c Release -o /app
+# Copy everything else and build
+COPY . ./
+RUN dotnet publish -c Release -o out
 
-FROM build AS publish
-RUN dotnet publish RadonTestsManager.csproj -c Release -o /app
-
-FROM base AS final
+# Build runtime image
+FROM microsoft/dotnet:aspnetcore-runtime
 WORKDIR /app
-COPY --from=publish /app .
-
-ENTRYPOINT ["dotnet", "RadonTestsManager.dll"]
+COPY --from=build-env /app/out .
+ENTRYPOINT ["dotnet", "RTM-WebAPI.dll"]

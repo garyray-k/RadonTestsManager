@@ -8,10 +8,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Blazorise" Version="0.5.2" />
+    <PackageReference Include="Blazorise.Bootstrap" Version="0.5.2" />
+    <PackageReference Include="Blazorise.Icons.FontAwesome" Version="0.5.2" />
     <PackageReference Include="Microsoft.AspNetCore.Blazor.Browser" Version="0.7.0" />
     <PackageReference Include="Microsoft.AspNetCore.Blazor.Build" Version="0.7.0" PrivateAssets="all" />
 
     <DotNetCliToolReference Include="Microsoft.AspNetCore.Blazor.Cli" Version="0.7.0" />
+
+    <PackageReference Include="Microsoft.AspNetCore.Components.Browser" Version="3.0.0-preview-19075-0444" />
   </ItemGroup>
 
 </Project>

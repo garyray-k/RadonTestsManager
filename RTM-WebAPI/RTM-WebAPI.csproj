@@ -37,5 +37,6 @@
   <ItemGroup>
     <None Remove="CRMs\.DS_Store" />
     <None Remove="Dockerfile.txt" />
+    <None Remove="Dockerfile" />
   </ItemGroup>
 </Project>

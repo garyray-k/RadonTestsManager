@@ -6,14 +6,14 @@ services:
     environment:
       SA_PASSWORD: "<Gisw5/WugjXicu>"
       ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433" 
     networks:
       rtm-net:
         ipv4_address: 10.0.0.2
-  radontestsmanager:
-    image: "${DOCKER_REGISTRY-}radontestsmanager"
+  rtm_web_api:
     build:
-      context: "."
-      dockerfile: "RadonTestsManager/Dockerfile"
+      context: "RTM-WebAPI/"
     ports: 
       - "5000:80"
     networks:

@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using RadonTestsManager.DBContext;
 using RadonTestsManager.Models;
+using RTM;
 
 namespace RadonTestsManager {
     public class Program {
@@ -25,8 +26,8 @@ namespace RadonTestsManager {
                     context.Database.Migrate();
                     context.SeedRolesAsync(roleManager).Wait();
                     //TODO next two lines will populate a blank database for testing - uses Bogus
-                    //context.SeedFakeUsersAsync(userManager, signInManager, config).Wait();
-                    //context.SeedDevDataAsync().Wait();
+                    context.SeedFakeUsersAsync(userManager, signInManager, config).Wait();
+                    context.SeedDevDataAsync().Wait();
                 } catch (Exception ex) {
                     Console.WriteLine(ex.Message);
                     var logger = services.GetRequiredService<ILogger<Program>>();
