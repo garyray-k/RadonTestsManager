@@ -79,7 +79,7 @@ namespace RadonTestsManager.Controllers {
                 _logger.LogWarning("An existing Job was sent to AddNewJob.");
                 return BadRequest("Error: A Job already exists with that Job Number.");
             }
-            if (newJob.DeviceType != "LS Vial" || newJob.DeviceType != "CRM" || newJob.DeviceType != "Unkown") {
+            if (newJob.DeviceType != "LS Vial" || newJob.DeviceType != "CRM" || newJob.DeviceType != "Unknown") {
                 _logger.LogWarning("Incorrect DeviceType input. Only 'LS Vial' and 'CRM' is acceptable.");
                 return BadRequest("Error: Device Type must be 'LS Vial' or 'CRM'.");
             }

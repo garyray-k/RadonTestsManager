@@ -17,7 +17,6 @@ namespace RadonTestsManager.Models {
         public string Status{  get; set; }
         public string LastUpdatedBy { get; set; }
 
-        public int AddressId { get; set; }
         public Address Location{  get; set; }
 
         public List<CRMMaintenanceLogEntry> MaintenanceLog{  get; set; }

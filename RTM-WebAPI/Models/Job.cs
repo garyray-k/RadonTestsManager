@@ -18,13 +18,10 @@ namespace RadonTestsManager.Models {
         public bool Completed { get; set; }
         public string LastUpdatedBy { get; set; }
 
-        public int ContinuosRadonMonitorId { get; set; }
         public ContinuousRadonMonitor ContinousRadonMonitor{ get; set; }
 
-        public int LSvialId { get; set; }
         public LSVial LSvial { get; set; }
 
-        public int JobAddressId { get; set; }
         public Address JobAddress { get; set; }
     }
 }

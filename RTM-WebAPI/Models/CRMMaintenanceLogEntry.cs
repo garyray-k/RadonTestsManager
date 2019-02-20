@@ -11,7 +11,6 @@ namespace RadonTestsManager.Models {
         public string ActionsTaken { get; set; }
         public string LastUpdatedBy { get; set; }
 
-        public int ContinuousRadonMonitorId { get; set; }
         public ContinuousRadonMonitor CRM { get; set; }
     }
 }
