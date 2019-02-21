@@ -45,6 +45,7 @@ namespace RadonTestsManager {
                     config.SetBasePath(Directory.GetCurrentDirectory());
                 })
                 .UseApplicationInsights()
-                .UseStartup<Startup>();
+                .UseStartup<Startup>()
+                .UseUrls("http://0.0.0.0:5555");
     }
 }

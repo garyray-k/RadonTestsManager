@@ -15,7 +15,7 @@ services:
     build:
       context: "RTM-WebAPI/"
     ports: 
-      - "5000:80"
+      - "5555:5555"
     networks:
       rtm-net:
         ipv4_address: 10.0.0.3

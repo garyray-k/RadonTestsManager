@@ -23,5 +23,5 @@ I will usually have a `master` and `dev` branch. The `dev` branch will be labele
 3. Docker Compose all the containers (API, SQL) `docker-compose build`
 4. Watch your console prompt do a bunch of things (may need to download images before building the app)
 5. `docker-compose up` will spin up both the asp.net core app and SQL Server.
-6. Keep that terminal window open and find the SQL Server at `127.0.0.1:1433` or browse to the API documentation at `127.0.0.1:5000/swagger`
+6. Keep that terminal window open and find the SQL Server at `127.0.0.1:1433` or browse to the API documentation at `127.0.0.1:5555/swagger`
 7. Kill the containers by hitting `Ctrl + C` in the same terminal window you ran it all in. (prompt should say as much)
