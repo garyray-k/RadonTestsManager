@@ -1,0 +1,100 @@
+﻿@page "/jobs"
+@inject HttpClient Http
+
+<h1>Let's Display Jobs!</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+@if (jobs == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Job Number</th>
+                <th>Service Type</th>
+                <th>Service Date</th>
+                <th>Service Deadline</th>
+                <th>Device Type</th>
+                <th>Access Info</th>
+                <th>Special Notes</th>
+                <th>Driver</th>
+                <th>Time Of Day</th>
+                <th>Arrival Time</th>
+                <th>Confirmed</th>
+                <th>Completed</th>
+                <th>Last Updated By</th>
+                <th>Job Address</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (JobDTO job in jobs)
+            {
+                <tr>
+                    <td> @job.JobNumber </td>
+                    <td> @job.ServiceType </td>
+                    <td> @job.ServiceDate </td>
+                    <td> @job.ServiceDeadLine </td>
+                    <td> @job.DeviceType </td>
+                    <td> @job.AccessInfo </td>
+                    <td> @job.SpecialNotes </td>
+                    <td> @job.Driver </td>
+                    <td> @job.TimeOfDay </td>
+                    <td> @job.ArrivalTime </td>
+                    <td> @job.Confirmed </td>
+                    <td> @job.Completed </td>
+                    <td> @job.LastUpdatedBy </td>
+                    <td> @job.JobAddress </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@functions {
+    JobDTO[] jobs;
+    
+
+    protected override async Task OnInitAsync()
+    {
+        await RefreshJobs();
+    }
+
+    private async Task RefreshJobs() {
+        Http.BaseAddress = new Uri("http://127.0.0.1:5555");
+        jobs = await Http.GetJsonAsync<JobDTO[]>("/api/Jobs");
+        StateHasChanged();
+    }
+
+    public class JobDTO {
+        public int JobNumber { get; set; }
+        public string ServiceType { get; set; }
+        public DateTime ServiceDate { get; set; }
+        public DateTime ServiceDeadLine { get; set; }
+        public string DeviceType { get; set; }
+        public string AccessInfo { get; set; }
+        public string SpecialNotes { get; set; }
+        public string Driver { get; set; }
+        public string TimeOfDay { get; set; }
+        public DateTime ArrivalTime { get; set; }
+        public bool Confirmed { get; set; }
+        public bool Completed { get; set; }
+        public string LastUpdatedBy { get; set; }
+        public AddressDTO JobAddress { get; set; }
+    }
+
+    public class AddressDTO {
+        public int AddressId { get; set; }
+        public string CustomerName { get; set; }
+        public string Address1 { get; set; }
+        public string Address2 { get; set; }
+        public string City { get; set; }
+        public string Country { get; set; }
+        public string PostalCode { get; set; }
+        public string State { get; set; }
+        public List<int> JobHistory { get; set; }
+    }
+}
