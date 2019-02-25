@@ -1,6 +1,8 @@
 # Blazor!
 
-Developing Blazor on a Mac is currently finnicky. No tooling in VS and .NET Core on Mac doesn't like to play with it too much.
-But I suppose that's what happens when you eschew JS for an experimental project.
+I'm using the *Experimental* [Blazor](https://blazor.net) to build a **hopefully** JS-less dynamic website. Right now the biggest issue is no Authentication handling that I've found yet so I may have to write some JS interop to do it.
 
-Super helpful! https://medium.com/@st.mas29/microsoft-blazor-web-api-with-jwt-authentication-part-1-f33a44abab9d
+## Using
+
+[BionicFramework](https://bionicframework.github.io/Documentation/)
+[Bootstrap4](https://getbootstrap.com/)

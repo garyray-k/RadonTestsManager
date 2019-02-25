@@ -1,35 +1,22 @@
-﻿<div class="top-row pl-4 navbar navbar-dark">
-    <Dropdown>
-        <DropdownToggle Color="Color.Primary">
-            Radon Tests Manager
-        </DropdownToggle>
-        <DropdownMenu>
-            <DropdownItem>
-                <NavLink class="nav-link" href="" Match=NavLinkMatch.All>
-                    Home
-                </NavLink>
-            </DropdownItem>
-
-            <DropdownDivider />
-
-            <DropdownItem>
-                <NavLink class="nav-link" href="jobs">
-                    Jobs
-                </NavLink>
-            </DropdownItem>
-            <DropdownItem>
-                <NavLink class="nav-link" href="login">
-                    Login
-                </NavLink>
-            </DropdownItem>
-            <DropdownItem>
-                <NavLink class="nav-link" href="register">
-                    Register
-                </NavLink>
-            </DropdownItem>
-        </DropdownMenu>
-    </Dropdown>
-</div>
+﻿<nav class="navbar navbar-expand-lg bg-dark navbar-dark fixed-top">
+  <a class="navbar-brand" href="#">Radon Tests Manager</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <div class="navbar-nav">
+        <a class="nav-link nav-item" href="home">Home</a>
+        <a class="nav-link nav-item" href="jobs">Jobs</a>
+        <a class="nav-link nav-item" href="crms">CRMs</a>
+        <a class="nav-link nav-item" href="lsvials">LS Vials</a>
+        <a class="nav-link nav-item" href="addresses">Addresses</a>
+        <a class="nav-link nav-item" href="admin">Admin</a>
+    </div>
+    <nav class="nav ml-auto">
+      <a class="nav-link nav-item text-white-50" tabindex="-1" href="login">Login</a>
+    </nav>
+  </div>  
+</nav>
 
 @functions {
 

@@ -1,18 +1,18 @@
 ﻿@page "/jobs"
 @inject HttpClient Http
+@using RTM_Blazor.Client.Shared
 
-<h1>Let's Display Jobs!</h1>
-
-<p>This component demonstrates fetching data from the server.</p>
-
+<h4>Jobs</h4>
+<div>
 @if (jobs == null)
 {
-    <p><em>Loading...</em></p>
+    <p><em>Loading Jobs...</em></p>
 }
 else
 {
-    <table class="table">
-        <thead>
+    <table class="table table-hover table-bordered table-responsive-md">
+    <caption>List of Jobs</caption>
+        <thead class="thead-dark">
             <tr>
                 <th>Job Number</th>
                 <th>Service Type</th>
@@ -36,16 +36,16 @@ else
                 <tr>
                     <td> @job.JobNumber </td>
                     <td> @job.ServiceType </td>
-                    <td> @job.ServiceDate </td>
-                    <td> @job.ServiceDeadLine </td>
+                    <td> @job.ServiceDate.ToString("yyyy/MM/dd") </td>
+                    <td> @job.ServiceDeadLine.ToString("yyyy/MM/dd") </td>
                     <td> @job.DeviceType </td>
                     <td> @job.AccessInfo </td>
                     <td> @job.SpecialNotes </td>
                     <td> @job.Driver </td>
                     <td> @job.TimeOfDay </td>
-                    <td> @job.ArrivalTime </td>
-                    <td> @job.Confirmed </td>
-                    <td> @job.Completed </td>
+                    <td> @job.ArrivalTime.ToString("HH:mmtt") </td>
+                    <td> @ConfirmedHandler(job.Confirmed) </td>
+                    <td> @CompletedHandler(job.Completed) </td>
                     <td> @job.LastUpdatedBy </td>
                     <td> @job.JobAddress </td>
                 </tr>
@@ -53,48 +53,27 @@ else
         </tbody>
     </table>
 }
+</div>
 
 @functions {
-    JobDTO[] jobs;
+    List<JobDTO> jobs;
     
-
     protected override async Task OnInitAsync()
     {
         await RefreshJobs();
     }
 
+    public string CompletedHandler(bool value) {
+        return (value) ? "Completed" : "Not Completed";
+    }
+    public string ConfirmedHandler(bool value) {
+        return (value) ? "Confirmed" : "Not Confirmed";
+    }
+
     private async Task RefreshJobs() {
         Http.BaseAddress = new Uri("http://127.0.0.1:5555");
-        jobs = await Http.GetJsonAsync<JobDTO[]>("/api/Jobs");
+        var retrieveJobs = await Http.GetJsonAsync<JobDTO[]>("/api/Jobs");
+        jobs = retrieveJobs.ToList().OrderBy(x => x.ServiceDate).ToList();
         StateHasChanged();
-    }
-
-    public class JobDTO {
-        public int JobNumber { get; set; }
-        public string ServiceType { get; set; }
-        public DateTime ServiceDate { get; set; }
-        public DateTime ServiceDeadLine { get; set; }
-        public string DeviceType { get; set; }
-        public string AccessInfo { get; set; }
-        public string SpecialNotes { get; set; }
-        public string Driver { get; set; }
-        public string TimeOfDay { get; set; }
-        public DateTime ArrivalTime { get; set; }
-        public bool Confirmed { get; set; }
-        public bool Completed { get; set; }
-        public string LastUpdatedBy { get; set; }
-        public AddressDTO JobAddress { get; set; }
-    }
-
-    public class AddressDTO {
-        public int AddressId { get; set; }
-        public string CustomerName { get; set; }
-        public string Address1 { get; set; }
-        public string Address2 { get; set; }
-        public string City { get; set; }
-        public string Country { get; set; }
-        public string PostalCode { get; set; }
-        public string State { get; set; }
-        public List<int> JobHistory { get; set; }
     }
 }
