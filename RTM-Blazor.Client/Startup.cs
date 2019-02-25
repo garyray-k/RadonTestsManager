@@ -1,3 +1,4 @@
+using BionicExtensions.Attributes;
 using Microsoft.AspNetCore.Blazor.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Blazorise;
@@ -10,6 +11,7 @@ namespace RTM_Blazor.Client
     {
         public void ConfigureServices(IServiceCollection services)
         {
+            InjectableAttribute.RegisterInjectables(services);
             services
                 .AddBootstrapProviders()
                 .AddFontAwesomeIcons();
@@ -20,7 +22,6 @@ namespace RTM_Blazor.Client
             app
             .UseBootstrapProviders()
             .UseFontAwesomeIcons();
-
             app.AddComponent<App>("app");
         }
     }

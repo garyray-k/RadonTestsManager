@@ -13,7 +13,8 @@ using RTM.Server.Utility;
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace RadonTestsManager.Controllers {
-    [Authorize]
+    //[Authorize]
+    [AllowAnonymous]
     [Route("api/[controller]")]
     public class AddressController : Controller {
         private readonly RadonTestsManagerContext _context;

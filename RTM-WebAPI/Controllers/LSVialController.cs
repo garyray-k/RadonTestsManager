@@ -13,7 +13,8 @@ using RadonTestsManager.Models;
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace RadonTestsManager.Controllers {
-    [Authorize]
+    //[Authorize]
+    [AllowAnonymous]
     [Route("api/[controller]")]
     public class LSVialController : Controller {
         private readonly RadonTestsManagerContext _context;

@@ -50,7 +50,17 @@ namespace RadonTestsManager {
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JWTConfiguration:SigningKey"]))
                     };
                 });
-            services.AddCors();
+            services.AddCors(options =>
+            {
+                options.AddPolicy("CorsPolicy",
+                  builder => {
+                      builder
+                      .AllowAnyOrigin()
+                      .AllowAnyHeader()
+                      .AllowAnyMethod();
+                      //.AllowAnyOrigin();
+                  });
+            });
             services.AddApplicationInsightsTelemetry(Configuration);
 
             services.AddMvc(config => {
@@ -106,12 +116,8 @@ namespace RadonTestsManager {
                     defaults: new { controller = "Home", action = "Index" });
             });
 
-            app.UseCors(b => {
-                b.WithHeaders();
-                b.AllowAnyMethod();
-                //b.WithOrigins();
-                b.AllowAnyOrigin();
-            });
+
+            app.UseCors("CorsPolicy");
 
             if (env.IsDevelopment()) {
                 app.UseSwagger();

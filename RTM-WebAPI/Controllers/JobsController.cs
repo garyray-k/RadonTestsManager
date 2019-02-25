@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -13,7 +14,9 @@ using RadonTestsManager.Models;
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace RadonTestsManager.Controllers {
-    [Authorize]
+    //[Authorize]
+    [AllowAnonymous]
+    [EnableCors("CorsPolicy")]
     [Route("api/[controller]")]
     public class JobsController : Controller {
         private readonly RadonTestsManagerContext _context;
@@ -62,8 +65,8 @@ namespace RadonTestsManager.Controllers {
 
         [HttpGet]
         public async Task<ActionResult<JobDTO[]>> GetAllJobs() {
-            List<Job> jobs = await _context.Jobs.ToListAsync();
-            return jobs == null ? (ActionResult<JobDTO[]>)NotFound() : (ActionResult<JobDTO[]>)Ok(_jobsMapper.Map<JobDTO>(jobs));
+            Job[] jobs = await _context.Jobs.ToArrayAsync();
+            return jobs == null ? (ActionResult<JobDTO[]>)NotFound() : (ActionResult<JobDTO[]>)Ok(_jobsMapper.Map<JobDTO[]>(jobs));
         }
 
         [HttpGet("{jobNum}")]

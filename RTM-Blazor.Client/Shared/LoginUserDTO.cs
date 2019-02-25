@@ -1,4 +1,4 @@
-namespace RTM_Blazor.Client
+namespace RTM_Blazor.Client.Shared
 {
     public class LoginUserDTO {
             public string Password { get; set; }

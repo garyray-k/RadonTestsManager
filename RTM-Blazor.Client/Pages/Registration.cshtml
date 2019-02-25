@@ -1,27 +1,31 @@
-@page "/login"
+@page "/register"
+@inject Microsoft.AspNetCore.Blazor.Services.IUriHelper UriHelper
 @inject HttpClient Http
 @using RTM_Blazor.Client.Shared
 
-<h1> Login to RTM</h1>
+<h1>RTM Registration for New User</h1>
 
 <div>
     <TextEdit Role="TextRole.Email" Placeholder="Email..." bind-Text="@Email" />
     <TextEdit Role="TextRole.Password" Placeholder="Password..." bind-Text="@Password" />
+    <TextEdit Role="TextRole.Password" Placeholder="Confirm password..." bind-Text="@ConfirmPassword" /> 
     <SimpleButton Clicked="@SubmitForm" Color="Color.Primary" IsOutline="true">Login</SimpleButton>
 </div>
 
 @functions {
     public string Email { get; set; } = "";
     public string Password { get; set; } = "";
+    public string ConfirmPassword { get; set; } = "";
     public string Token { get; set; } = "";
 
     private async void SubmitForm() {
-        var login = new LoginUserDTO {
+        var register = new RegisterUserDTO {
             Email = Email,
-            Password = Password
+            Password = Password,
+            ConfirmPassword = ConfirmPassword
         };
-        var response = await Http.PostJsonAsync<object>("http://127.0.0.1:5555/api/account/login", login);
+        await Http.PostJsonAsync<object>("http://127.0.0.1:5555/api/account/register", register);
 
-        Console.WriteLine(response);
+        UriHelper.NavigateTo("/login");
     }
 }
