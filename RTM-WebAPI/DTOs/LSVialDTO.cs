@@ -1,8 +1,10 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using RadonTestsManager.Models;
 
 namespace RadonTestsManager.DTOs {
     public class LSVialDTO {
+        public int LSVialId { get; set; }
         [Required]
         [Range(0,99999999)]
         public int SerialNumber { get; set; }
@@ -11,9 +13,6 @@ namespace RadonTestsManager.DTOs {
         [Required]
         public DateTime TestStart { get; set; }
         public DateTime? TestFinish { get; set; }
-        [Required]
-        [Range(0, 99999999)]
-        public int JobNumber { get; set; }
         public string LastUpdatedBy { get; set; }
     }
 }

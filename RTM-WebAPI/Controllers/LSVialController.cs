@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -15,6 +16,7 @@ using RadonTestsManager.Models;
 namespace RadonTestsManager.Controllers {
     //[Authorize]
     [AllowAnonymous]
+    [EnableCors("CorsPolicy")]
     [Route("api/[controller]")]
     public class LSVialController : Controller {
         private readonly RadonTestsManagerContext _context;
@@ -24,11 +26,13 @@ namespace RadonTestsManager.Controllers {
         static LSVialController() {
             var config = new MapperConfiguration(cfg => {
                 cfg.CreateMap<LSVial, LSVialDTO>()
+                    .ForMember(dto => dto.LSVialId, opt => opt.MapFrom(lsvial => lsvial.LSVialId))
                     .ForMember(dto => dto.SerialNumber, opt => opt.MapFrom(lsvial => lsvial.SerialNumber))
                     .ForMember(dto => dto.Status, opt => opt.MapFrom(lsvial => lsvial.Status))
                     .ForMember(dto => dto.TestStart, opt => opt.MapFrom(lsvial => lsvial.TestStart))
                     .ForMember(dto => dto.TestFinish, opt => opt.MapFrom(lsvial => lsvial.TestFinish));
                 cfg.CreateMap<LSVialDTO, LSVial>()
+                    .ForMember(lsvial => lsvial.LSVialId, opt => opt.MapFrom(dto => dto.LSVialId))
                     .ForMember(lsvial => lsvial.SerialNumber, opt => opt.MapFrom(dto => dto.SerialNumber))
                     .ForMember(lsvial => lsvial.Status, opt => opt.MapFrom(dto => dto.Status))
                     .ForMember(lsvial => lsvial.TestStart, opt => opt.MapFrom(dto => dto.TestStart))
@@ -43,20 +47,15 @@ namespace RadonTestsManager.Controllers {
             _logger = logger;
         }
 
-        // GET: api/lsvial
         [HttpGet]
         public async Task<ActionResult<LSVialDTO[]>> GetAllLSVials() {
             List<LSVial> lSVials = await _context.LSVials.ToListAsync();
             return lSVials == null ? (ActionResult<LSVialDTO[]>)NotFound() : (ActionResult<LSVialDTO[]>)Ok(_lsVialMapper.Map<LSVialDTO[]>(lSVials));
         }
 
-        // GET api/lsvial/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<LSVialDTO>> GetLSVialBySerialNumber(int serialNum) {
-            var lsVial = await _context.LSVials
-                    .Include(p => p.LSVialId)
-                    .Include(p => p.Status)
-                    .FirstOrDefaultAsync(p => p.SerialNumber == serialNum);
+        [HttpGet("{vialId}")]
+        public async Task<ActionResult<LSVialDTO>> GetLSVialBySerialNumber(int vialId) {
+            var lsVial = await _context.LSVials.FindAsync(vialId);
             if (lsVial == null) {
                 return NotFound();
             }
@@ -64,7 +63,6 @@ namespace RadonTestsManager.Controllers {
             return Ok(_lsVialMapper.Map<LSVialDTO>(lsVial));
         }
 
-        // POST api/lsvial
         [HttpPost("")]
         public async Task<IActionResult> AddNewLSVial([FromBody] LSVialDTO newLSVial) {
             if (await _context.LSVials.AnyAsync(x => x.SerialNumber.Equals(newLSVial.SerialNumber))) {
@@ -76,32 +74,21 @@ namespace RadonTestsManager.Controllers {
                 Status = newLSVial.Status,
                 TestStart = newLSVial.TestStart,
                 TestFinish = newLSVial.TestStart.AddDays(2),
-                JobHistory = new List<Job> { },
                 LastUpdatedBy = user.UserName + DateTime.UtcNow.ToShortDateString()
             };
 
-            Job job;
-            bool jobExists = await _context.Jobs.AnyAsync(x => x.JobNumber.Equals(newLSVial.JobNumber));
-            if (jobExists) {
-                job = await _context.Jobs.FirstOrDefaultAsync(y => y.JobNumber == newLSVial.JobNumber);
-            } else {
-                job = new Job() { JobNumber = newLSVial.JobNumber };
-                await _context.Jobs.AddAsync(job);
-            }
-
-            lSVial.JobHistory.Add(job);
             await _context.LSVials.AddAsync(lSVial);
 
             await _context.SaveChangesAsync();
             return CreatedAtAction(
                 nameof(GetLSVialBySerialNumber),
-                new { sn = lSVial.SerialNumber, jobNum = job.JobNumber, user, dateCreated = DateTime.UtcNow});
+                new { sn = lSVial.SerialNumber, user, dateCreated = DateTime.UtcNow});
         }
 
-        // PUT api/lsvial/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateLSVialWithoutJobAddition(int id, [FromBody]LSVialDTO updatedLSVial) {
-            var lSVial = await _context.LSVials.FindAsync(id);
+        [HttpPut("{vialIs}")]
+        public async Task<IActionResult> UpdateLSVialWithoutJobAddition(int vialId, [FromBody]LSVialDTO updatedLSVial) {
+            var lSVial = await _context.LSVials.FindAsync(vialId);
+            lSVial.LSVialId = updatedLSVial.LSVialId;
             lSVial.SerialNumber = updatedLSVial.SerialNumber;
             lSVial.Status = updatedLSVial.Status;
             lSVial.TestStart = updatedLSVial.TestStart;
@@ -115,22 +102,9 @@ namespace RadonTestsManager.Controllers {
 
         }
 
-        [HttpPut("addjob/{id}")]
-        public async Task<IActionResult> AddJobToLSVial(int id, [FromBody]JobDTO newJob) {
-            var lSVial = await _context.LSVials.FindAsync(id);
-            var job = await _context.Jobs.FirstOrDefaultAsync(j => j.JobNumber == newJob.JobNumber);
-            lSVial.JobHistory.Add(job);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(
-                nameof(AddJobToLSVial),
-                new { sn = lSVial.SerialNumber, jobAdded = job });
-        }
-
-        // DELETE api/lsvial/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteLSVial(int id) {
-            var lSVial = await _context.LSVials.FindAsync(id);
-            lSVial.JobHistory.Clear();
+        [HttpDelete("{vialId}")]
+        public async Task<IActionResult> DeleteLSVial(int vialId) {
+            var lSVial = await _context.LSVials.FindAsync(vialId);
             _context.LSVials.Remove(lSVial);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(GetAllLSVials));

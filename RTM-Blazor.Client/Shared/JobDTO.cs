@@ -3,6 +3,7 @@ using RTM_Blazor.Client.Shared;
 
 namespace RTM_Blazor.Client.Shared {
     public class JobDTO {
+        public int JobId { get; set; }
         public int JobNumber { get; set; }
         public string ServiceType { get; set; }
         public DateTime ServiceDate { get; set; }

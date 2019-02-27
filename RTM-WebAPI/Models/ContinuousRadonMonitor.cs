@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RadonTestsManager.Models {
     public class ContinuousRadonMonitor {
@@ -17,9 +18,10 @@ namespace RadonTestsManager.Models {
         public string Status{  get; set; }
         public string LastUpdatedBy { get; set; }
 
-        public Address Location{  get; set; }
+        public  virtual Address Address{  get; set; }
 
-        public List<CRMMaintenanceLogEntry> MaintenanceLog{  get; set; }
-        public List<Job> JobHistory { get; set; }
+        public virtual List<CRMMaintenanceLogEntry> MaintenanceLogHistory { get; private set; }
+
+        public virtual List<Job> JobHistory { get; private set; }
     }
 }

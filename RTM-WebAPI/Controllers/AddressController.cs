@@ -1,20 +1,20 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using RadonTestsManager.DBContext;
 using RadonTestsManager.DTOs;
 using RadonTestsManager.Models;
-using RTM.Server.Utility;
-
-// For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace RadonTestsManager.Controllers {
     //[Authorize]
     [AllowAnonymous]
+    [EnableCors("CorsPolicy")]
     [Route("api/[controller]")]
     public class AddressController : Controller {
         private readonly RadonTestsManagerContext _context;
@@ -31,10 +31,10 @@ namespace RadonTestsManager.Controllers {
                     .ForMember(dto => dto.City, opt => opt.MapFrom(addr => addr.City))
                     .ForMember(dto => dto.Country, opt => opt.MapFrom(addr => addr.Country))
                     .ForMember(dto => dto.PostalCode, opt => opt.MapFrom(addr => addr.PostalCode))
-                    .ForMember(dto => dto.State, opt => opt.MapFrom(addr => addr.State));
-                cfg.CreateMap<List<Job>, List<int>>().ConvertUsing(new JobHistoryToDTOConverter());
+                    .ForMember(dto => dto.State, opt => opt.MapFrom(addr => addr.State))
+                    .ForMember(dto => dto.JobHistory, opt => opt.MapFrom(addr => addr.JobHistory.Select(x => x.JobId)));
                 cfg.CreateMap<AddressDTO, Address>()
-                    .ForMember(addr => addr.AddressId, opt => opt.Ignore())
+                    .ForMember(addr => addr.AddressId, opt => opt.MapFrom(dto => dto.AddressId))
                     .ForMember(addr => addr.CustomerName, opt => opt.MapFrom(dto => dto.CustomerName))
                     .ForMember(addr => addr.Address1, opt => opt.MapFrom(dto => dto.Address1))
                     .ForMember(addr => addr.Address2, opt => opt.MapFrom(dto => dto.Address2))
@@ -55,9 +55,15 @@ namespace RadonTestsManager.Controllers {
         [HttpGet]
         public async Task<ActionResult<AddressDTO[]>> GetAllAddresses() {
             List<Address> addresses = await _context.Addresses.ToListAsync();
-            return addresses == null 
-                ? (ActionResult<AddressDTO[]>)NotFound() 
-                : (ActionResult<AddressDTO[]>)Ok(_addresssMapper.Map<AddressDTO[]>(addresses));
+            if (addresses == null) {
+                return (ActionResult<AddressDTO[]>)NotFound();
+            }
+            var results = _addresssMapper.Map<AddressDTO[]>(addresses);
+            foreach (var address in results) {
+                var jobs = await _context.Jobs.Where(x => x.Address.AddressId == address.AddressId).Select(x => x.JobNumber).ToArrayAsync();
+                address.JobHistory = jobs.ToList();
+            }
+            return (ActionResult<AddressDTO[]>)Ok(results);
         }
 
         [HttpGet("{addressId}")]
@@ -81,9 +87,9 @@ namespace RadonTestsManager.Controllers {
                 new { newAddress });
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAddress(int id, [FromBody]AddressDTO updatedAddress) {
-            var oldAddress = await _context.Addresses.FindAsync(id);
+        [HttpPut("{addressId}")]
+        public async Task<IActionResult> UpdateAddress(int addressId, [FromBody]AddressDTO updatedAddress) {
+            var oldAddress = await _context.Addresses.FindAsync(addressId);
             var newAddress = _addresssMapper.Map<AddressDTO, Address>(updatedAddress, oldAddress);
             oldAddress = newAddress;
             await _context.SaveChangesAsync();
@@ -92,25 +98,25 @@ namespace RadonTestsManager.Controllers {
                 new { updatedAddress });
         }
 
-        [HttpPut("jobs/{id}")]
-        public async Task<IActionResult> AddJobtoAddress(int id, [FromBody]JobDTO jobToAdd) {
-            var address = await _context.Addresses.FindAsync(id);
-            bool jobExists = await _context.Jobs.AnyAsync(x => x.JobNumber == jobToAdd.JobNumber);
+        [HttpPut("{addressId}/jobs/{jobIdToAdd}")]
+        public async Task<IActionResult> AddJobtoAddress(int addressId, int jobIdToAdd) {
+            var address = await _context.Addresses.FindAsync(addressId);
+            bool jobExists = await _context.Jobs.AnyAsync(x => x.JobId == jobIdToAdd);
             if (jobExists) {
-                address.JobHistory.Add(await _context.Jobs.FindAsync(jobToAdd.JobNumber));
+                var jobToAdd = await _context.Jobs.FindAsync(jobIdToAdd);
+                jobToAdd.Address = address;
             } else {
                 return BadRequest("Error: No Job with that Job Number exists.");
             }
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(
-                nameof(AddJobtoAddress),
-                new { jobToAdd });
+                nameof(AddJobtoAddress), address);
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAddress(int id) {
-            var address = await _context.Addresses.FindAsync(id);
+        [HttpDelete("{addressId}")]
+        public async Task<IActionResult> DeleteAddress(int addressId) {
+            var address = await _context.Addresses.FindAsync(addressId);
             address.JobHistory.Clear();
             await _context.SaveChangesAsync();
             _context.Addresses.Remove(address);

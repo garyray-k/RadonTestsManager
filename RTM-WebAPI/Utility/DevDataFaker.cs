@@ -28,10 +28,7 @@ namespace RTM.Server.Utility {
                 .RuleFor(j => j.ArrivalTime, f => f.Date.Future().ToLocalTime())
                 .RuleFor(j => j.Confirmed, f => f.Random.Bool())
                 .RuleFor(j => j.Completed, f => f.Random.Bool())
-                .RuleFor(j => j.LastUpdatedBy, f => f.Internet.Email())
-                .RuleFor(j => j.ContinousRadonMonitor, f => null)
-                .RuleFor(j => j.LSvial, f => null)
-                .RuleFor(j => j.JobAddress, f => null);
+                .RuleFor(j => j.LastUpdatedBy, f => f.Internet.Email());
             return jobs.Generate(10).ToArray();
         }
 
@@ -68,7 +65,7 @@ namespace RTM.Server.Utility {
                 .RuleFor(c => c.Status, f => f.Lorem.Sentence())
                 .RuleFor(c => c.LastUpdatedBy, f => f.Internet.Email())
                 .RuleFor(c => c.JobHistory, f => f.PickRandom(jobsForHistory, 5).ToList())
-                .RuleFor(c => c.MaintenanceLog, f => mxLogEntries.Generate(3).ToList());
+                .RuleFor(c => c.MaintenanceLogHistory, f => mxLogEntries.Generate(3).ToList());
 
             return crms.Generate(20).ToArray();
         }
@@ -79,9 +76,7 @@ namespace RTM.Server.Utility {
                 .RuleFor(v => v.Status, f => f.Lorem.Sentence())
                 .RuleFor(v => v.TestStart, f => f.Date.Recent())
                 .RuleFor(v => v.TestFinish, (f, u) => u.TestStart.AddDays(2))
-                .RuleFor(v => v.LastUpdatedBy, f => f.Internet.Email())
-                .RuleFor(v => v.JobHistory, f => f.PickRandom(jobsForHistory, 5).ToList());
-
+                .RuleFor(v => v.LastUpdatedBy, f => f.Internet.Email());
             return lSVials.Generate(5).ToArray();
        }
       

@@ -4,6 +4,7 @@ using RadonTestsManager.DTOs;
 
 namespace RadonTestsManager.DTOs {
     public class JobDTO {
+        public int JobId { get; set; }
         [Required]
         [Range(0, 99999999)]
         public int JobNumber { get; set; }
@@ -25,7 +26,5 @@ namespace RadonTestsManager.DTOs {
         public bool Confirmed { get; set; }
         public bool Completed { get; set; }
         public string LastUpdatedBy { get; set; }
-
-        public AddressDTO JobAddress { get; set; }
     }
 }

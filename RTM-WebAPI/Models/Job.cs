@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RadonTestsManager.Models {
     public class Job {
@@ -18,10 +19,11 @@ namespace RadonTestsManager.Models {
         public bool Completed { get; set; }
         public string LastUpdatedBy { get; set; }
 
-        public ContinuousRadonMonitor ContinousRadonMonitor{ get; set; }
-
-        public LSVial LSvial { get; set; }
-
-        public Address JobAddress { get; set; }
+        [ForeignKey("CRMId")]
+        public virtual ContinuousRadonMonitor ContinousRadonMonitor { get; set; }
+        [ForeignKey("LSVialId")]
+        public virtual LSVial LSvial { get; set; }
+        [ForeignKey("AddressId")]
+        public virtual Address Address { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
@@ -26,6 +27,7 @@ namespace RadonTestsManager.Controllers {
         static JobsController() {
             var config = new MapperConfiguration(cfg => {
                 cfg.CreateMap<Job, JobDTO>()
+                    .ForMember(dto => dto.JobId, opt => opt.MapFrom(job => job.JobId))
                     .ForMember(dto => dto.JobNumber, opt => opt.MapFrom(job => job.JobNumber))
                     .ForMember(dto => dto.ServiceType, opt => opt.MapFrom(job => job.ServiceType))
                     .ForMember(dto => dto.ServiceDate, opt => opt.MapFrom(job => job.ServiceDate))
@@ -37,9 +39,9 @@ namespace RadonTestsManager.Controllers {
                     .ForMember(dto => dto.TimeOfDay, opt => opt.MapFrom(job => job.TimeOfDay))
                     .ForMember(dto => dto.ArrivalTime, opt => opt.MapFrom(job => job.ArrivalTime))
                     .ForMember(dto => dto.Confirmed, opt => opt.MapFrom(job => job.Confirmed))
-                    .ForMember(dto => dto.Completed, opt => opt.MapFrom(job => job.Completed))
-                    .ForMember(dto => dto.JobAddress, opt => opt.MapFrom(job => job.JobAddress));
+                    .ForMember(dto => dto.Completed, opt => opt.MapFrom(job => job.Completed));
                 cfg.CreateMap<JobDTO, Job>()
+                    .ForMember(job => job.JobId, opt => opt.MapFrom(dto => dto.JobId))
                     .ForMember(job => job.JobNumber, opt => opt.MapFrom(dto => dto.JobNumber))
                     .ForMember(job => job.ServiceType, opt => opt.MapFrom(dto => dto.ServiceType))
                     .ForMember(job => job.ServiceDate, opt => opt.MapFrom(dto => dto.ServiceDate))
@@ -51,8 +53,7 @@ namespace RadonTestsManager.Controllers {
                     .ForMember(job => job.TimeOfDay, opt => opt.MapFrom(dto => dto.TimeOfDay))
                     .ForMember(job => job.ArrivalTime, opt => opt.MapFrom(dto => dto.ArrivalTime))
                     .ForMember(job => job.Confirmed, opt => opt.MapFrom(dto => dto.Confirmed))
-                    .ForMember(job => job.Completed, opt => opt.MapFrom(dto => dto.Completed))
-                    .ForMember(job => job.JobAddress, opt => opt.MapFrom(dto => dto.JobAddress));
+                    .ForMember(job => job.Completed, opt => opt.MapFrom(dto => dto.Completed));
             });
 
             _jobsMapper = config.CreateMapper();
@@ -69,11 +70,17 @@ namespace RadonTestsManager.Controllers {
             return jobs == null ? (ActionResult<JobDTO[]>)NotFound() : (ActionResult<JobDTO[]>)Ok(_jobsMapper.Map<JobDTO[]>(jobs));
         }
 
-        [HttpGet("{jobNum}")]
-        public async Task<ActionResult<JobDTO>> GetJobByNumber(int jobNum) {
-            var job = await _context.Jobs
-                .FirstOrDefaultAsync(j => j.JobNumber == jobNum);
+        [HttpGet("{jobId}")]
+        public async Task<ActionResult<JobDTO>> GetJobByNumber(int jobId) {
+            var job = await _context.Jobs.FindAsync(jobId);
             return job == null ? (ActionResult<JobDTO>)NotFound() : (ActionResult<JobDTO>)Ok(_jobsMapper.Map<JobDTO>(job));
+        }
+
+        [HttpGet("address/{addressId}")]
+        public async Task<ActionResult<int[]>> GetJobHistoryByAddressId(int addressId) {
+            var address = await _context.Addresses.FindAsync(addressId);
+            var jobs = await _context.Jobs.Where(x => x.Address == address).Select(x => x.JobNumber).ToArrayAsync();
+            return jobs == null ? (ActionResult<int[]>)NotFound() : (ActionResult<int[]>)Ok(jobs);
         }
 
         [HttpPost("")]
@@ -99,9 +106,9 @@ namespace RadonTestsManager.Controllers {
                 new { jn = job.JobNumber, user.UserName, dateCreated = DateTime.UtcNow.ToShortDateString() });
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateJob(int id, [FromBody]JobDTO updatedJob) {
-            var job = await _context.Jobs.FindAsync(id);
+        [HttpPut("{jobId}")]
+        public async Task<IActionResult> UpdateJob(int jobId, [FromBody]JobDTO updatedJob) {
+            var job = await _context.Jobs.FindAsync(jobId);
             job = _jobsMapper.Map<Job>(updatedJob);
             var user = await _context.Users.FindAsync(User.Identity.Name);
             job.LastUpdatedBy = user.UserName + DateTime.UtcNow.ToShortDateString();
@@ -111,68 +118,64 @@ namespace RadonTestsManager.Controllers {
                 _jobsMapper.Map<JobDTO>(job));
         }
 
-        [HttpPut("updatecrm/{id}")]
-        public async Task<IActionResult> UpdateCRMOfJob(int id, [FromBody]int continuousRadonMonitorSerialNumber) {
-            var job = await _context.Jobs.FindAsync(id);
-            var CRMInDB = await _context.ContinuousRadonMonitors.FirstOrDefaultAsync(x => x.SerialNumber == continuousRadonMonitorSerialNumber);
-            job.ContinousRadonMonitor = CRMInDB;
+        [HttpPut("{jobId}/updatecrm/{crmId}")]
+        public async Task<IActionResult> UpdateCRMOfJob(int jobId, int crmId) {
+            var job = await _context.Jobs.FindAsync(jobId);
             var user = await _context.Users.FindAsync(User.Identity.Name);
             job.LastUpdatedBy = user.UserName + DateTime.UtcNow.ToShortDateString();
+            bool crmExists = await _context.ContinuousRadonMonitors.AnyAsync(x => x.CRMId == crmId);
+            if (crmExists) {
+                var cRM = await _context.ContinuousRadonMonitors.FindAsync(crmId);
+                cRM.LastUpdatedBy = user.UserName + DateTime.UtcNow.ToShortDateString();
+                job.ContinousRadonMonitor = cRM;
+            } else {
+                return BadRequest("Error: No CRM with that CRM Id exists.");
+            }
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(UpdateCRMOfJob),
-                new { job.JobNumber, CRMInDB.SerialNumber });
+
+            return CreatedAtAction(
+                nameof(UpdateCRMOfJob), job
+                );
         }
 
-        [HttpPut("updatelsvial/{id}")]
-        public async Task<IActionResult> UpdateLSVialOfJob(int id, [FromBody]int LSVialSerialNumber) {
-            var job = await _context.Jobs.FindAsync(id);
-            var VialInDB = await _context.LSVials.FirstOrDefaultAsync(x => x.SerialNumber == LSVialSerialNumber);
-            job.LSvial = VialInDB;
+        [HttpPut("{jobId}/updatelsvial/{vialId}")]
+        public async Task<IActionResult> UpdateLSVialOfJob(int jobId, int vialId) {
+            var job = await _context.Jobs.FindAsync(jobId);
+            var vial = await _context.LSVials.FirstOrDefaultAsync(x => x.LSVialId == vialId);
+            job.LSvial = vial;
             var user = await _context.Users.FindAsync(User.Identity.Name);
+            vial.LastUpdatedBy = user.UserName + DateTime.UtcNow.ToShortDateString();
             job.LastUpdatedBy = user.UserName + DateTime.UtcNow.ToShortDateString();
             await _context.SaveChangesAsync();
             return CreatedAtAction(
                 nameof(UpdateLSVialOfJob),
-                new { job.JobNumber, VialInDB.SerialNumber});
+                new { job });
         }
 
-        [HttpPut("updateaddress/{id}")]
-        public async Task<IActionResult> UpdateAddressOfJob(int id, [FromBody]AddressDTO newAddress) {
-            bool addressExists = await _context.Addresses.AnyAsync(x => x.AddressId == newAddress.AddressId);
-            var job = await _context.Jobs.FindAsync(id);
-            Address address;
+        [HttpPut("{jobId}/updateaddress/{addressId}")]
+        public async Task<IActionResult> UpdateAddressOfJob(int jobId, int addressId) {
+            bool addressExists = await _context.Addresses.AnyAsync(x => x.AddressId == addressId);
+            var job = await _context.Jobs.FindAsync(jobId);
             if (addressExists) {
-                address = await _context.Addresses.FirstOrDefaultAsync(x => x.AddressId == newAddress.AddressId);
+                var address = await _context.Addresses.FirstOrDefaultAsync(x => x.AddressId == addressId);
+                job.Address = address;
             } else {
-                address = new Address() {
-                    CustomerName = newAddress.CustomerName,
-                    Address1 = newAddress.Address1,
-                    Address2 = newAddress.Address2,
-                    City = newAddress.City,
-                    Country = newAddress.Country,
-                    PostalCode = newAddress.PostalCode,
-                    State = newAddress.State
-            };
-                job.JobAddress = address;
-                await _context.Addresses.AddAsync(address);
-                await _context.SaveChangesAsync();
-                address = await _context.Addresses.FirstOrDefaultAsync(x => x.AddressId == newAddress.AddressId);
+                return BadRequest("No Address with that Id.");
             }
-            address.JobHistory.Add(job);
             var user = await _context.Users.FindAsync(User.Identity.Name);
             job.LastUpdatedBy = user.UserName + DateTime.UtcNow.ToShortDateString();
             await _context.SaveChangesAsync();
             return CreatedAtAction(
                 nameof(UpdateAddressOfJob),
-                new { job.JobNumber, address.AddressId });
+                new { job });
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteJob(int id) {
-            var job = await _context.Jobs.FindAsync(id);
+        [HttpDelete("{jobId}")]
+        public async Task<IActionResult> DeleteJob(int jobId) {
+            var job = await _context.Jobs.FindAsync(jobId);
             job.LSvial = null;
             job.ContinousRadonMonitor = null;
-            job.JobAddress = null;
+            job.Address = null;
             await _context.SaveChangesAsync();
             _context.Jobs.Remove(job);
             await _context.SaveChangesAsync();

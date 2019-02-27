@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -12,11 +13,10 @@ using RadonTestsManager.DTOs;
 using RadonTestsManager.Models;
 using RTM.Server.Utility;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-
 namespace RadonTestsManager.Controllers {
     //[Authorize]
     [AllowAnonymous]
+    [EnableCors("CorsPolicy")]
     [Route("api/[controller]")]
     public class ContinuousRadonMonitorController : Controller {
         private readonly RadonTestsManagerContext _context;
@@ -26,6 +26,7 @@ namespace RadonTestsManager.Controllers {
         static ContinuousRadonMonitorController() {
             var config = new MapperConfiguration(cfg => {
                 cfg.CreateMap<ContinuousRadonMonitor, ContinuousRadonMonitorDTO>()
+                    .ForMember(dto => dto.CrmId, opt => opt.MapFrom(crm => crm.CRMId))
                     .ForMember(dto => dto.MonitorNumber, opt => opt.MapFrom(crm => crm.MonitorNumber))
                     .ForMember(dto => dto.SerialNumber, opt => opt.MapFrom(crm => crm.SerialNumber))
                     .ForMember(dto => dto.LastCalibrationDate, opt => opt.MapFrom(crm => crm.LastCalibrationDate))
@@ -33,9 +34,12 @@ namespace RadonTestsManager.Controllers {
                     .ForMember(dto => dto.LastBatteryChangeDate, opt => opt.MapFrom(crm => crm.LastBatteryChangeDate))
                     .ForMember(dto => dto.TestStart, opt => opt.MapFrom(crm => crm.TestStart))
                     .ForMember(dto => dto.TestFinish, opt => opt.MapFrom(crm => crm.TestFinish))
-                    .ForMember(dto => dto.Status, opt => opt.MapFrom(crm => crm.Status));
-                cfg.CreateMap<List<Job>, List<int>>().ConvertUsing(new JobHistoryToDTOConverter());
+                    .ForMember(dto => dto.Status, opt => opt.MapFrom(crm => crm.Status))
+                    .ForMember(dto => dto.AddressId, opt => opt.MapFrom(crm => crm.Address.AddressId))
+                    .ForMember(dto => dto.MaintenanceLog, opt => opt.MapFrom(crm => crm.MaintenanceLogHistory.Select(x => x.EntryId)))
+                    .ForMember(dto => dto.JobHistory, opt => opt.MapFrom(crm => crm.JobHistory.Select(x => x.JobId)));
                 cfg.CreateMap<ContinuousRadonMonitorDTO, ContinuousRadonMonitor>()
+                    .ForMember(crm => crm.CRMId, opt => opt.MapFrom(dto => dto.CrmId))
                     .ForMember(crm => crm.MonitorNumber, opt => opt.MapFrom(dto => dto.MonitorNumber))
                     .ForMember(crm => crm.SerialNumber, opt => opt.MapFrom(dto => dto.SerialNumber))
                     .ForMember(crm => crm.LastCalibrationDate, opt => opt.MapFrom(dto => dto.LastCalibrationDate))
@@ -43,7 +47,10 @@ namespace RadonTestsManager.Controllers {
                     .ForMember(crm => crm.LastBatteryChangeDate, opt => opt.MapFrom(dto => dto.LastBatteryChangeDate))
                     .ForMember(crm => crm.TestStart, opt => opt.MapFrom(dto => dto.TestStart))
                     .ForMember(crm => crm.TestFinish, opt => opt.MapFrom(dto => dto.TestFinish))
-                    .ForMember(crm => crm.Status, opt => opt.MapFrom(dto => dto.Status));
+                    .ForMember(crm => crm.Status, opt => opt.MapFrom(dto => dto.Status))
+                    .ForMember(crm => crm.Address, opt => opt.Ignore())
+                    .ForMember(crm => crm.MaintenanceLogHistory, opt => opt.Ignore())
+                    .ForMember(crm => crm.JobHistory, opt => opt.Ignore());
                 cfg.CreateMap<CRMMaintenanceLogEntry, CRMMaintenanceLogEntryDTO>()
                     .ForMember(l => l.EntryId, opt => opt.MapFrom(entry => entry.EntryId))
                     .ForMember(l => l.EntryDate, opt => opt.MapFrom(entry => entry.EntryDate))
@@ -61,26 +68,39 @@ namespace RadonTestsManager.Controllers {
         [HttpGet]
         public async Task<ActionResult<ContinuousRadonMonitorDTO[]>> GetAllCRMs() {
             List<ContinuousRadonMonitor> cRMs = await _context.ContinuousRadonMonitors.ToListAsync();
-            return cRMs == null ? (ActionResult<ContinuousRadonMonitorDTO[]>)NotFound() : (ActionResult<ContinuousRadonMonitorDTO[]>)Ok(_cRMMapper.Map<ContinuousRadonMonitorDTO[]>(cRMs));
+            if (cRMs == null) {
+                return (ActionResult<ContinuousRadonMonitorDTO[]>)NotFound();
+            }
+            var results = _cRMMapper.Map<ContinuousRadonMonitorDTO[]>(cRMs);
+            foreach (var crm in results) {
+                var jobs = await _context.Jobs
+                                    .Where(x => x.ContinousRadonMonitor.CRMId == crm.CrmId)
+                                    .Select(x => x.JobNumber)
+                                    .ToArrayAsync();
+                crm.JobHistory = jobs.ToList();
+            }
+            return (ActionResult<ContinuousRadonMonitorDTO[]>)Ok(results);
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<ContinuousRadonMonitorDTO>> GetCRMByNumber(int id) {
+        [HttpGet("{crmId}")]
+        public async Task<ActionResult<ContinuousRadonMonitorDTO>> GetCRMByNumber(int crmId) {
             var crm = await _context.ContinuousRadonMonitors
-                .FirstOrDefaultAsync(c => c.CRMId == id);
+                .FirstOrDefaultAsync(c => c.CRMId == crmId);
             return crm == null ? (ActionResult<ContinuousRadonMonitorDTO>)NotFound() : (ActionResult<ContinuousRadonMonitorDTO>)Ok(_cRMMapper.Map<ContinuousRadonMonitorDTO>(crm));
         }
 
-        [HttpGet("maintenance/{id}")]
-        public async Task<ActionResult<CRMMaintenanceLogEntry[]>> GetCRMMaintenanceLogs(int id) {
-            var logs = await _context.CRMMaintenanceLogs.Where(x => x.CRM.CRMId == id).ToArrayAsync();
-            return (ActionResult<CRMMaintenanceLogEntry[]>)Ok(logs);
+        [HttpGet("maintenance/{crmId}")]
+        public async Task<ActionResult<CRMMaintenanceLogEntryDTO[]>> GetCRMMaintenanceLogs(int crmId) {
+            var crm = await _context.ContinuousRadonMonitors.FindAsync(crmId);
+            var result = crm.MaintenanceLogHistory.ToArray();
+            return (ActionResult<CRMMaintenanceLogEntryDTO[]>)Ok(result);
         }
 
-        [HttpGet("jobs/{id}")]
-        public async Task<ActionResult<List<Job>[]>> GetJobsOfCRM(int id) {
-            var jobs = await _context.Jobs.Where(x => x.ContinousRadonMonitor.CRMId == id).ToArrayAsync();
-            return (ActionResult<List<Job>[]>)Ok(jobs);
+        [HttpGet("jobs/{crmId}")]
+        public async Task<ActionResult<List<JobDTO>[]>> GetJobsOfCRM(int crmId) {
+            var crm = await _context.ContinuousRadonMonitors.FindAsync(crmId);
+            var result = crm.JobHistory.ToArray();
+            return (ActionResult<List<JobDTO>[]>)Ok(result);
         }
 
         [HttpPost("")]
@@ -96,7 +116,6 @@ namespace RadonTestsManager.Controllers {
             var cRM = _cRMMapper.Map<ContinuousRadonMonitor>(newCRM);
             cRM.TestFinish = cRM.TestStart.AddDays(2);
             cRM.LastUpdatedBy = user.UserName + DateTime.UtcNow.ToShortDateString();
-            cRM.MaintenanceLog = new List<CRMMaintenanceLogEntry> { };
 
             await _context.ContinuousRadonMonitors.AddAsync(cRM);
             await _context.SaveChangesAsync();
@@ -106,11 +125,11 @@ namespace RadonTestsManager.Controllers {
                 new { cRM.SerialNumber, cRM.MonitorNumber, user.UserName, dateCreated = DateTime.UtcNow.ToShortDateString() });
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateCRM(int id, [FromBody]ContinuousRadonMonitorDTO updatedCRM) {
-            var cRM = await _context.ContinuousRadonMonitors.FindAsync(id);
+        [HttpPut("{crmId}")]
+        public async Task<IActionResult> UpdateCRM(int crmId, [FromBody]ContinuousRadonMonitorDTO updatedCRM) {
+            var cRM = await _context.ContinuousRadonMonitors.FindAsync(crmId);
             cRM = _cRMMapper.Map<ContinuousRadonMonitor>(updatedCRM);
-            cRM.CRMId = id;
+            cRM.CRMId = crmId;
             var user = await _context.Users.FindAsync(User.Identity.Name);
             cRM.LastUpdatedBy = user.UserName + DateTime.UtcNow.ToShortDateString();
             await _context.SaveChangesAsync();
@@ -119,56 +138,49 @@ namespace RadonTestsManager.Controllers {
                 updatedCRM);
         }
 
-        [HttpPut("jobs/{id}")]
-        public async Task<IActionResult> AddJobtoCRM(int id, [FromBody]JobDTO jobToAdd) {
-            var cRM = await _context.ContinuousRadonMonitors.FindAsync(id);
+        [HttpPut("{crmId}/jobs/{jobId}")]
+        public async Task<IActionResult> AddJobtoCRM(int crmId, int jobIdToAdd) {
+            var cRM = await _context.ContinuousRadonMonitors.FindAsync(crmId);
             var user = await _context.Users.FindAsync(User.Identity.Name);
-            bool jobExists = await _context.Jobs.AnyAsync(x => x.JobNumber == jobToAdd.JobNumber);
+            cRM.LastUpdatedBy = user.UserName + DateTime.UtcNow.ToShortDateString();
+            bool jobExists = await _context.Jobs.AnyAsync(x => x.JobId == jobIdToAdd);
             if (jobExists) {
-                cRM.JobHistory.Add(await _context.Jobs.FindAsync(jobToAdd.JobNumber));
+                var job = await _context.Jobs.FindAsync(jobIdToAdd);
+                job.ContinousRadonMonitor = cRM;
+                job.LastUpdatedBy = user.UserName + DateTime.UtcNow.ToShortDateString();
             } else {
-                return BadRequest("Error: No Job with that Job Number exists.");
+                return BadRequest("Error: No Job with that Job Id exists.");
             }
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(
-                nameof(AddJobtoCRM),
-                new { cRM.CRMId, jobToAdd.JobNumber, user.UserName, date = DateTime.UtcNow.ToShortDateString() });
+                nameof(AddJobtoCRM), cRM
+                );
         }
 
-        [HttpPut("maintenance/{id}")]
-        public async Task<IActionResult> AddMaintenanceEntrytoCRM(int id, [FromBody]CRMMaintenanceLogEntryDTO logEntry) {
-            var cRM = await _context.ContinuousRadonMonitors.FindAsync(id);
+        [HttpPut("{crmId}/maintenance/{entryId}")]
+        public async Task<IActionResult> AddMaintenanceEntrytoCRM(int crmId, int entryId) {
+            var cRM = await _context.ContinuousRadonMonitors.FindAsync(crmId);
             var user = await _context.Users.FindAsync(User.Identity.Name);
-            var entry = new CRMMaintenanceLogEntry() {
-                EntryDate = logEntry.EntryDate,
-                MaintenanceDescription = logEntry.MaintenanceDescription,
-                ActionsTaken = logEntry.ActionsTaken,
-                CRM = cRM,
-                LastUpdatedBy = user.UserName + DateTime.UtcNow.ToShortDateString()
-            };
-            await _context.CRMMaintenanceLogs.AddAsync(entry);
-
+            var entry = await _context.CRMMaintenanceLogs.FindAsync(entryId);
+            entry.ContinuousRadonMonitor = cRM;
+            entry.LastUpdatedBy = user.UserName + DateTime.UtcNow.ToShortDateString();
             cRM.LastUpdatedBy = user.UserName + DateTime.UtcNow.ToShortDateString() + " MaintenaceLogEntered";
             await _context.SaveChangesAsync();
             return CreatedAtAction(
                 nameof(AddMaintenanceEntrytoCRM),
-                logEntry);
+                cRM);
         }
 
-        [HttpPut("updateaddress/{id}")]
-        public async Task<IActionResult> UpdateAddressOfCRM(int id, [FromBody]Address newAddress) {
-            bool addressExists = await _context.Addresses.AnyAsync(x => x == newAddress);
-            var cRM = await _context.ContinuousRadonMonitors.FindAsync(id);
-            Address address;
+        [HttpPut("{crmId}/address/{addressId}")]
+        public async Task<IActionResult> UpdateAddressOfCRM(int crmId, int addressId) {
+            bool addressExists = await _context.Addresses.AnyAsync(x => x.AddressId == addressId);
+            var cRM = await _context.ContinuousRadonMonitors.FindAsync(crmId);
+            var address = await _context.Addresses.FindAsync(addressId);
             if (addressExists) {
-                address = await _context.Addresses.FirstOrDefaultAsync(x => x == newAddress);
-                cRM.Location = address;
+                cRM.Address = address;
             } else {
-                cRM.Location = newAddress;
-                await _context.Addresses.AddAsync(newAddress);
-                await _context.SaveChangesAsync();
-                address = await _context.Addresses.FirstOrDefaultAsync(x => x == newAddress);
+                return BadRequest("No Address with that Id found.");
             }
             var user = await _context.Users.FindAsync(User.Identity.Name);
             cRM.LastUpdatedBy = user.UserName + DateTime.UtcNow.ToShortDateString();
@@ -178,14 +190,12 @@ namespace RadonTestsManager.Controllers {
                 new { cRM.SerialNumber, address.AddressId });
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id) {
-            var cRM = await _context.ContinuousRadonMonitors.FindAsync(id);
-            cRM.Location = null;
-            cRM.MaintenanceLog.Clear();
+        [HttpDelete("{crmId}")]
+        public async Task<IActionResult> Delete(int crmId) {
+            var cRM = await _context.ContinuousRadonMonitors.FindAsync(crmId);
+            cRM.Address = null;
+            cRM.MaintenanceLogHistory.Clear();
             cRM.JobHistory.Clear();
-            cRM.MaintenanceLog = null;
-            cRM.JobHistory = null;
             await _context.SaveChangesAsync();
             _context.ContinuousRadonMonitors.Remove(cRM);
             await _context.SaveChangesAsync();

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RadonTestsManager.DBContext;
 
-namespace RadonTestsManager.Migrations
+namespace RTMWebAPI.Migrations
 {
     [DbContext(typeof(RadonTestsManagerContext))]
     partial class RadonTestsManagerContextModelSnapshot : ModelSnapshot
@@ -160,13 +160,13 @@ namespace RadonTestsManager.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<int?>("AddressId");
+
                     b.Property<DateTime>("LastBatteryChangeDate");
 
                     b.Property<DateTime>("LastCalibrationDate");
 
                     b.Property<string>("LastUpdatedBy");
-
-                    b.Property<int?>("LocationAddressId");
 
                     b.Property<int>("MonitorNumber");
 
@@ -182,7 +182,7 @@ namespace RadonTestsManager.Migrations
 
                     b.HasKey("CRMId");
 
-                    b.HasIndex("LocationAddressId");
+                    b.HasIndex("AddressId");
 
                     b.ToTable("ContinuousRadonMonitors");
                 });
@@ -218,19 +218,19 @@ namespace RadonTestsManager.Migrations
 
                     b.Property<string>("AccessInfo");
 
+                    b.Property<int?>("AddressId");
+
                     b.Property<DateTime>("ArrivalTime");
+
+                    b.Property<int?>("CRMId");
 
                     b.Property<bool>("Completed");
 
                     b.Property<bool>("Confirmed");
 
-                    b.Property<int?>("ContinousRadonMonitorCRMId");
-
                     b.Property<string>("DeviceType");
 
                     b.Property<string>("Driver");
-
-                    b.Property<int?>("JobAddressAddressId");
 
                     b.Property<int>("JobNumber");
 
@@ -250,11 +250,13 @@ namespace RadonTestsManager.Migrations
 
                     b.HasKey("JobId");
 
-                    b.HasIndex("ContinousRadonMonitorCRMId");
+                    b.HasIndex("AddressId");
 
-                    b.HasIndex("JobAddressAddressId");
+                    b.HasIndex("CRMId");
 
-                    b.HasIndex("LSVialId");
+                    b.HasIndex("LSVialId")
+                        .IsUnique()
+                        .HasFilter("[LSVialId] IS NOT NULL");
 
                     b.ToTable("Jobs");
                 });
@@ -378,31 +380,36 @@ namespace RadonTestsManager.Migrations
 
             modelBuilder.Entity("RadonTestsManager.Models.ContinuousRadonMonitor", b =>
                 {
-                    b.HasOne("RadonTestsManager.Models.Address", "Location")
+                    b.HasOne("RadonTestsManager.Models.Address", "Address")
                         .WithMany()
-                        .HasForeignKey("LocationAddressId");
+                        .HasForeignKey("AddressId")
+                        .OnDelete(DeleteBehavior.SetNull);
                 });
 
             modelBuilder.Entity("RadonTestsManager.Models.CRMMaintenanceLogEntry", b =>
                 {
-                    b.HasOne("RadonTestsManager.Models.ContinuousRadonMonitor", "CRM")
-                        .WithMany("MaintenanceLog")
-                        .HasForeignKey("CRMId");
+                    b.HasOne("RadonTestsManager.Models.ContinuousRadonMonitor", "ContinuousRadonMonitor")
+                        .WithMany("MaintenanceLogHistory")
+                        .HasForeignKey("CRMId")
+                        .OnDelete(DeleteBehavior.SetNull);
                 });
 
             modelBuilder.Entity("RadonTestsManager.Models.Job", b =>
                 {
+                    b.HasOne("RadonTestsManager.Models.Address", "Address")
+                        .WithMany("JobHistory")
+                        .HasForeignKey("AddressId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("RadonTestsManager.Models.ContinuousRadonMonitor", "ContinousRadonMonitor")
                         .WithMany("JobHistory")
-                        .HasForeignKey("ContinousRadonMonitorCRMId");
-
-                    b.HasOne("RadonTestsManager.Models.Address", "JobAddress")
-                        .WithMany("JobHistory")
-                        .HasForeignKey("JobAddressAddressId");
+                        .HasForeignKey("CRMId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("RadonTestsManager.Models.LSVial", "LSvial")
-                        .WithMany("JobHistory")
-                        .HasForeignKey("LSVialId");
+                        .WithOne("Job")
+                        .HasForeignKey("RadonTestsManager.Models.Job", "LSVialId")
+                        .OnDelete(DeleteBehavior.SetNull);
                 });
 #pragma warning restore 612, 618
         }

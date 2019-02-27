@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RadonTestsManager.Models {
     public class CRMMaintenanceLogEntry {
@@ -11,6 +12,7 @@ namespace RadonTestsManager.Models {
         public string ActionsTaken { get; set; }
         public string LastUpdatedBy { get; set; }
 
-        public ContinuousRadonMonitor CRM { get; set; }
+        [ForeignKey("CRMId")]
+        public virtual ContinuousRadonMonitor ContinuousRadonMonitor { get; set; }
     }
 }

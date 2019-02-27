@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RadonTestsManager.Models {
     public class LSVial {
@@ -11,7 +12,6 @@ namespace RadonTestsManager.Models {
         public DateTime TestFinish{ get; set; }
         public string LastUpdatedBy { get; set; }
 
-        public List<Job> JobHistory { get; set; }
-
+        public virtual Job Job { get; set; }
     }
 }

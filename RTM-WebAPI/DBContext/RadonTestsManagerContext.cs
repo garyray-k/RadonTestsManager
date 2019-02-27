@@ -24,6 +24,22 @@ namespace RadonTestsManager.DBContext {
         
         }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder) {
+            base.OnModelCreating(modelBuilder);
+            // a very ugly way to avoid 'SetNull' on Identity User/Role but do it for other FKs
+            var fks = modelBuilder.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys());
+            var identityStrings = new List<string>() { "Key: IdentityRole.Id PK", "Key: User.Id PK" };
+            foreach (var relationship in fks) {
+                if (identityStrings.Contains(relationship.PrincipalKey.ToString())) continue;
+                relationship.DeleteBehavior = DeleteBehavior.SetNull;
+            }
+
+            //modelBuilder.Entity<ContinuousRadonMonitor>()
+                //.HasMany<Job>()
+                //.WithOne()
+                //.OnDelete(DeleteBehavior.SetNull);
+        }
+
         public async Task SeedRolesAsync(RoleManager<IdentityRole> roleManager) {
             if (!await roleManager.RoleExistsAsync("Admin")) {
                 var admin = new IdentityRole("Admin");

@@ -2,12 +2,30 @@
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace RadonTestsManager.Migrations
+namespace RTMWebAPI.Migrations
 {
-    public partial class IdentityAdded : Migration
+    public partial class FKUpdate6 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "Addresses",
+                columns: table => new
+                {
+                    AddressId = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                    CustomerName = table.Column<string>(nullable: true),
+                    Address1 = table.Column<string>(nullable: true),
+                    Address2 = table.Column<string>(nullable: true),
+                    City = table.Column<string>(nullable: true),
+                    Country = table.Column<string>(nullable: true),
+                    PostalCode = table.Column<string>(nullable: true),
+                    State = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Addresses", x => x.AddressId);
+                });
 
             migrationBuilder.CreateTable(
                 name: "AspNetRoles",
@@ -46,6 +64,51 @@ namespace RadonTestsManager.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "LSVials",
+                columns: table => new
+                {
+                    LSVialId = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                    SerialNumber = table.Column<int>(nullable: false),
+                    Status = table.Column<string>(nullable: true),
+                    TestStart = table.Column<DateTime>(nullable: false),
+                    TestFinish = table.Column<DateTime>(nullable: false),
+                    LastUpdatedBy = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_LSVials", x => x.LSVialId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ContinuousRadonMonitors",
+                columns: table => new
+                {
+                    CRMId = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                    MonitorNumber = table.Column<int>(nullable: false),
+                    SerialNumber = table.Column<int>(nullable: false),
+                    LastCalibrationDate = table.Column<DateTime>(nullable: false),
+                    PurchaseDate = table.Column<DateTime>(nullable: false),
+                    LastBatteryChangeDate = table.Column<DateTime>(nullable: false),
+                    TestStart = table.Column<DateTime>(nullable: false),
+                    TestFinish = table.Column<DateTime>(nullable: false),
+                    Status = table.Column<string>(nullable: true),
+                    LastUpdatedBy = table.Column<string>(nullable: true),
+                    AddressId = table.Column<int>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ContinuousRadonMonitors", x => x.CRMId);
+                    table.ForeignKey(
+                        name: "FK_ContinuousRadonMonitors_Addresses_AddressId",
+                        column: x => x.AddressId,
+                        principalTable: "Addresses",
+                        principalColumn: "AddressId",
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -154,6 +217,75 @@ namespace RadonTestsManager.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "CRMMaintenanceLogs",
+                columns: table => new
+                {
+                    EntryId = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                    EntryDate = table.Column<DateTime>(nullable: false),
+                    MaintenanceDescription = table.Column<string>(nullable: true),
+                    ActionsTaken = table.Column<string>(nullable: true),
+                    LastUpdatedBy = table.Column<string>(nullable: true),
+                    CRMId = table.Column<int>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CRMMaintenanceLogs", x => x.EntryId);
+                    table.ForeignKey(
+                        name: "FK_CRMMaintenanceLogs_ContinuousRadonMonitors_CRMId",
+                        column: x => x.CRMId,
+                        principalTable: "ContinuousRadonMonitors",
+                        principalColumn: "CRMId",
+                        onDelete: ReferentialAction.SetNull);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Jobs",
+                columns: table => new
+                {
+                    JobId = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                    JobNumber = table.Column<int>(nullable: false),
+                    ServiceType = table.Column<string>(nullable: true),
+                    ServiceDate = table.Column<DateTime>(nullable: false),
+                    ServiceDeadLine = table.Column<DateTime>(nullable: false),
+                    DeviceType = table.Column<string>(nullable: true),
+                    AccessInfo = table.Column<string>(nullable: true),
+                    SpecialNotes = table.Column<string>(nullable: true),
+                    Driver = table.Column<string>(nullable: true),
+                    TimeOfDay = table.Column<string>(nullable: true),
+                    ArrivalTime = table.Column<DateTime>(nullable: false),
+                    Confirmed = table.Column<bool>(nullable: false),
+                    Completed = table.Column<bool>(nullable: false),
+                    LastUpdatedBy = table.Column<string>(nullable: true),
+                    CRMId = table.Column<int>(nullable: true),
+                    LSVialId = table.Column<int>(nullable: true),
+                    AddressId = table.Column<int>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Jobs", x => x.JobId);
+                    table.ForeignKey(
+                        name: "FK_Jobs_Addresses_AddressId",
+                        column: x => x.AddressId,
+                        principalTable: "Addresses",
+                        principalColumn: "AddressId",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_Jobs_ContinuousRadonMonitors_CRMId",
+                        column: x => x.CRMId,
+                        principalTable: "ContinuousRadonMonitors",
+                        principalColumn: "CRMId",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_Jobs_LSVials_LSVialId",
+                        column: x => x.LSVialId,
+                        principalTable: "LSVials",
+                        principalColumn: "LSVialId",
+                        onDelete: ReferentialAction.SetNull);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -192,6 +324,33 @@ namespace RadonTestsManager.Migrations
                 column: "NormalizedUserName",
                 unique: true,
                 filter: "[NormalizedUserName] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ContinuousRadonMonitors_AddressId",
+                table: "ContinuousRadonMonitors",
+                column: "AddressId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CRMMaintenanceLogs_CRMId",
+                table: "CRMMaintenanceLogs",
+                column: "CRMId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Jobs_AddressId",
+                table: "Jobs",
+                column: "AddressId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Jobs_CRMId",
+                table: "Jobs",
+                column: "CRMId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Jobs_LSVialId",
+                table: "Jobs",
+                column: "LSVialId",
+                unique: true,
+                filter: "[LSVialId] IS NOT NULL");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -212,11 +371,25 @@ namespace RadonTestsManager.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "CRMMaintenanceLogs");
+
+            migrationBuilder.DropTable(
+                name: "Jobs");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
-                
+
+            migrationBuilder.DropTable(
+                name: "ContinuousRadonMonitors");
+
+            migrationBuilder.DropTable(
+                name: "LSVials");
+
+            migrationBuilder.DropTable(
+                name: "Addresses");
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RadonTestsManager.Models {
     public class Address {
@@ -12,6 +13,6 @@ namespace RadonTestsManager.Models {
         public string PostalCode{ get; set; }
         public string State{ get; set; }
 
-        public List<Job> JobHistory { get; set; }
+        public virtual List<Job> JobHistory { get; private set; }
     }
 }

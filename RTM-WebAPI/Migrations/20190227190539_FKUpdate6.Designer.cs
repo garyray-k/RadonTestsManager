@@ -7,17 +7,17 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RadonTestsManager.DBContext;
 
-namespace RadonTestsManager.Migrations
+namespace RTMWebAPI.Migrations
 {
     [DbContext(typeof(RadonTestsManagerContext))]
-    [Migration("20190204214800_final")]
-    partial class final
+    [Migration("20190227190539_FKUpdate6")]
+    partial class FKUpdate6
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.1.4-rtm-31024")
+                .HasAnnotation("ProductVersion", "2.1.8-servicing-32085")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -131,125 +131,7 @@ namespace RadonTestsManager.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
-            modelBuilder.Entity("RadonTestsManager.CRMs.Models.ContinuousRadonMonitor", b =>
-                {
-                    b.Property<int>("CRMId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("LastBatteryChangeDate");
-
-                    b.Property<DateTime>("LastCalibrationDate");
-
-                    b.Property<string>("LastUpdatedBy");
-
-                    b.Property<int?>("LocationAddressId");
-
-                    b.Property<int>("MonitorNumber");
-
-                    b.Property<DateTime>("PurchaseDate");
-
-                    b.Property<int>("SerialNumber");
-
-                    b.Property<string>("Status");
-
-                    b.Property<DateTime>("TestFinish");
-
-                    b.Property<DateTime>("TestStart");
-
-                    b.HasKey("CRMId");
-
-                    b.HasIndex("LocationAddressId");
-
-                    b.ToTable("ContinuousRadonMonitors");
-                });
-
-            modelBuilder.Entity("RadonTestsManager.CRMs.Models.CRMMaintenanceLogEntry", b =>
-                {
-                    b.Property<int>("EntryId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("ActionsTaken");
-
-                    b.Property<int?>("CRMId1");
-
-                    b.Property<DateTime>("EntryDate");
-
-                    b.Property<string>("LastUpdatedBy");
-
-                    b.Property<string>("MaintenanceDescription");
-
-                    b.HasKey("EntryId");
-
-                    b.HasIndex("CRMId1");
-
-                    b.ToTable("CRMMaintenanceLogs");
-                });
-
-            modelBuilder.Entity("RadonTestsManager.Jobs.Models.Job", b =>
-                {
-                    b.Property<int>("JobId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("AccessInfo");
-
-                    b.Property<DateTime>("ArrivalTime");
-
-                    b.Property<int?>("ContinousRadonMonitorCRMId");
-
-                    b.Property<string>("DeviceType");
-
-                    b.Property<string>("Driver");
-
-                    b.Property<int?>("JobAddressAddressId");
-
-                    b.Property<int>("JobNumber");
-
-                    b.Property<int?>("LSVialId");
-
-                    b.Property<string>("LastUpdatedBy");
-
-                    b.Property<DateTime>("ServiceDeadLine");
-
-                    b.Property<string>("ServiceType");
-
-                    b.Property<string>("SpecialNotes");
-
-                    b.HasKey("JobId");
-
-                    b.HasIndex("ContinousRadonMonitorCRMId");
-
-                    b.HasIndex("JobAddressAddressId");
-
-                    b.HasIndex("LSVialId");
-
-                    b.ToTable("Jobs");
-                });
-
-            modelBuilder.Entity("RadonTestsManager.LSVials.Models.LSVial", b =>
-                {
-                    b.Property<int>("LSVialId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("LastUpdatedBy");
-
-                    b.Property<int>("SerialNumber");
-
-                    b.Property<string>("Status");
-
-                    b.Property<DateTime>("TestFinish");
-
-                    b.Property<DateTime>("TestStart");
-
-                    b.HasKey("LSVialId");
-
-                    b.ToTable("LSVials");
-                });
-
-            modelBuilder.Entity("RadonTestsManager.Model.Address", b =>
+            modelBuilder.Entity("RadonTestsManager.Models.Address", b =>
                 {
                     b.Property<int>("AddressId")
                         .ValueGeneratedOnAdd()
@@ -274,7 +156,135 @@ namespace RadonTestsManager.Migrations
                     b.ToTable("Addresses");
                 });
 
-            modelBuilder.Entity("RadonTestsManager.Utility.Models.User", b =>
+            modelBuilder.Entity("RadonTestsManager.Models.ContinuousRadonMonitor", b =>
+                {
+                    b.Property<int>("CRMId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int?>("AddressId");
+
+                    b.Property<DateTime>("LastBatteryChangeDate");
+
+                    b.Property<DateTime>("LastCalibrationDate");
+
+                    b.Property<string>("LastUpdatedBy");
+
+                    b.Property<int>("MonitorNumber");
+
+                    b.Property<DateTime>("PurchaseDate");
+
+                    b.Property<int>("SerialNumber");
+
+                    b.Property<string>("Status");
+
+                    b.Property<DateTime>("TestFinish");
+
+                    b.Property<DateTime>("TestStart");
+
+                    b.HasKey("CRMId");
+
+                    b.HasIndex("AddressId");
+
+                    b.ToTable("ContinuousRadonMonitors");
+                });
+
+            modelBuilder.Entity("RadonTestsManager.Models.CRMMaintenanceLogEntry", b =>
+                {
+                    b.Property<int>("EntryId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("ActionsTaken");
+
+                    b.Property<int?>("CRMId");
+
+                    b.Property<DateTime>("EntryDate");
+
+                    b.Property<string>("LastUpdatedBy");
+
+                    b.Property<string>("MaintenanceDescription");
+
+                    b.HasKey("EntryId");
+
+                    b.HasIndex("CRMId");
+
+                    b.ToTable("CRMMaintenanceLogs");
+                });
+
+            modelBuilder.Entity("RadonTestsManager.Models.Job", b =>
+                {
+                    b.Property<int>("JobId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("AccessInfo");
+
+                    b.Property<int?>("AddressId");
+
+                    b.Property<DateTime>("ArrivalTime");
+
+                    b.Property<int?>("CRMId");
+
+                    b.Property<bool>("Completed");
+
+                    b.Property<bool>("Confirmed");
+
+                    b.Property<string>("DeviceType");
+
+                    b.Property<string>("Driver");
+
+                    b.Property<int>("JobNumber");
+
+                    b.Property<int?>("LSVialId");
+
+                    b.Property<string>("LastUpdatedBy");
+
+                    b.Property<DateTime>("ServiceDate");
+
+                    b.Property<DateTime>("ServiceDeadLine");
+
+                    b.Property<string>("ServiceType");
+
+                    b.Property<string>("SpecialNotes");
+
+                    b.Property<string>("TimeOfDay");
+
+                    b.HasKey("JobId");
+
+                    b.HasIndex("AddressId");
+
+                    b.HasIndex("CRMId");
+
+                    b.HasIndex("LSVialId")
+                        .IsUnique()
+                        .HasFilter("[LSVialId] IS NOT NULL");
+
+                    b.ToTable("Jobs");
+                });
+
+            modelBuilder.Entity("RadonTestsManager.Models.LSVial", b =>
+                {
+                    b.Property<int>("LSVialId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("LastUpdatedBy");
+
+                    b.Property<int>("SerialNumber");
+
+                    b.Property<string>("Status");
+
+                    b.Property<DateTime>("TestFinish");
+
+                    b.Property<DateTime>("TestStart");
+
+                    b.HasKey("LSVialId");
+
+                    b.ToTable("LSVials");
+                });
+
+            modelBuilder.Entity("RadonTestsManager.Models.User", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
@@ -335,7 +345,7 @@ namespace RadonTestsManager.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("RadonTestsManager.Utility.Models.User")
+                    b.HasOne("RadonTestsManager.Models.User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
@@ -343,7 +353,7 @@ namespace RadonTestsManager.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("RadonTestsManager.Utility.Models.User")
+                    b.HasOne("RadonTestsManager.Models.User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
@@ -356,7 +366,7 @@ namespace RadonTestsManager.Migrations
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("RadonTestsManager.Utility.Models.User")
+                    b.HasOne("RadonTestsManager.Models.User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
@@ -364,39 +374,44 @@ namespace RadonTestsManager.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("RadonTestsManager.Utility.Models.User")
+                    b.HasOne("RadonTestsManager.Models.User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("RadonTestsManager.CRMs.Models.ContinuousRadonMonitor", b =>
+            modelBuilder.Entity("RadonTestsManager.Models.ContinuousRadonMonitor", b =>
                 {
-                    b.HasOne("RadonTestsManager.Model.Address", "Location")
+                    b.HasOne("RadonTestsManager.Models.Address", "Address")
                         .WithMany()
-                        .HasForeignKey("LocationAddressId");
+                        .HasForeignKey("AddressId")
+                        .OnDelete(DeleteBehavior.SetNull);
                 });
 
-            modelBuilder.Entity("RadonTestsManager.CRMs.Models.CRMMaintenanceLogEntry", b =>
+            modelBuilder.Entity("RadonTestsManager.Models.CRMMaintenanceLogEntry", b =>
                 {
-                    b.HasOne("RadonTestsManager.CRMs.Models.ContinuousRadonMonitor", "CRMId")
-                        .WithMany("MaintenanceLog")
-                        .HasForeignKey("CRMId1");
+                    b.HasOne("RadonTestsManager.Models.ContinuousRadonMonitor", "ContinuousRadonMonitor")
+                        .WithMany("MaintenanceLogHistory")
+                        .HasForeignKey("CRMId")
+                        .OnDelete(DeleteBehavior.SetNull);
                 });
 
-            modelBuilder.Entity("RadonTestsManager.Jobs.Models.Job", b =>
+            modelBuilder.Entity("RadonTestsManager.Models.Job", b =>
                 {
-                    b.HasOne("RadonTestsManager.CRMs.Models.ContinuousRadonMonitor", "ContinousRadonMonitor")
+                    b.HasOne("RadonTestsManager.Models.Address", "Address")
                         .WithMany("JobHistory")
-                        .HasForeignKey("ContinousRadonMonitorCRMId");
+                        .HasForeignKey("AddressId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("RadonTestsManager.Model.Address", "JobAddress")
+                    b.HasOne("RadonTestsManager.Models.ContinuousRadonMonitor", "ContinousRadonMonitor")
                         .WithMany("JobHistory")
-                        .HasForeignKey("JobAddressAddressId");
+                        .HasForeignKey("CRMId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("RadonTestsManager.LSVials.Models.LSVial", "LSvial")
-                        .WithMany("JobHistory")
-                        .HasForeignKey("LSVialId");
+                    b.HasOne("RadonTestsManager.Models.LSVial", "LSvial")
+                        .WithOne("Job")
+                        .HasForeignKey("RadonTestsManager.Models.Job", "LSVialId")
+                        .OnDelete(DeleteBehavior.SetNull);
                 });
 #pragma warning restore 612, 618
         }
