@@ -76,7 +76,8 @@ namespace RTM.Server.Utility {
                 .RuleFor(v => v.Status, f => f.Lorem.Sentence())
                 .RuleFor(v => v.TestStart, f => f.Date.Recent())
                 .RuleFor(v => v.TestFinish, (f, u) => u.TestStart.AddDays(2))
-                .RuleFor(v => v.LastUpdatedBy, f => f.Internet.Email());
+                .RuleFor(v => v.LastUpdatedBy, f => f.Internet.Email())
+                .RuleFor(v => v.Job, f => f.PickRandom(jobsForHistory));
             return lSVials.Generate(5).ToArray();
        }
       

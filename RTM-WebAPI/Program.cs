@@ -46,6 +46,6 @@ namespace RadonTestsManager {
                 })
                 .UseApplicationInsights()
                 .UseStartup<Startup>()
-                .UseUrls("http://0.0.0.0:5555");
+                .UseUrls("http://127.0.0.1:5555");
     }
 }

@@ -39,7 +39,10 @@ namespace RadonTestsManager.Controllers {
                     .ForMember(dto => dto.TimeOfDay, opt => opt.MapFrom(job => job.TimeOfDay))
                     .ForMember(dto => dto.ArrivalTime, opt => opt.MapFrom(job => job.ArrivalTime))
                     .ForMember(dto => dto.Confirmed, opt => opt.MapFrom(job => job.Confirmed))
-                    .ForMember(dto => dto.Completed, opt => opt.MapFrom(job => job.Completed));
+                    .ForMember(dto => dto.Completed, opt => opt.MapFrom(job => job.Completed))
+                    .ForMember(dto => dto.CRMId, opt => opt.MapFrom(job => job.ContinousRadonMonitor.CRMId))
+                    .ForMember(dto => dto.LSVialId, opt => opt.MapFrom(job => job.LSvial.LSVialId))
+                    .ForMember(dto => dto.AddressId, opt => opt.MapFrom(job => job.Address.AddressId));
                 cfg.CreateMap<JobDTO, Job>()
                     .ForMember(job => job.JobId, opt => opt.MapFrom(dto => dto.JobId))
                     .ForMember(job => job.JobNumber, opt => opt.MapFrom(dto => dto.JobNumber))
@@ -53,7 +56,10 @@ namespace RadonTestsManager.Controllers {
                     .ForMember(job => job.TimeOfDay, opt => opt.MapFrom(dto => dto.TimeOfDay))
                     .ForMember(job => job.ArrivalTime, opt => opt.MapFrom(dto => dto.ArrivalTime))
                     .ForMember(job => job.Confirmed, opt => opt.MapFrom(dto => dto.Confirmed))
-                    .ForMember(job => job.Completed, opt => opt.MapFrom(dto => dto.Completed));
+                    .ForMember(job => job.Completed, opt => opt.MapFrom(dto => dto.Completed))
+                    .ForMember(job => job.ContinousRadonMonitor, opt => opt.Ignore())
+                    .ForMember(job => job.LSvial, opt => opt.Ignore())
+                    .ForMember(job => job.Address, opt => opt.Ignore());
             });
 
             _jobsMapper = config.CreateMapper();
@@ -66,8 +72,20 @@ namespace RadonTestsManager.Controllers {
 
         [HttpGet]
         public async Task<ActionResult<JobDTO[]>> GetAllJobs() {
-            Job[] jobs = await _context.Jobs.ToArrayAsync();
-            return jobs == null ? (ActionResult<JobDTO[]>)NotFound() : (ActionResult<JobDTO[]>)Ok(_jobsMapper.Map<JobDTO[]>(jobs));
+            List<Job> jobs = await _context.Jobs
+                                        .Include(x => x.ContinousRadonMonitor)
+                                        .Include(x => x.LSvial)
+                                        .Include(x => x.Address)
+                                        .ToListAsync();
+            var results = _jobsMapper.Map<JobDTO[]>(jobs);
+            for (int i = 0; i < jobs.Count(); i++) {
+                results[i].CRMId = jobs[i].ContinousRadonMonitor != null ? jobs[i].ContinousRadonMonitor.CRMId : 0;
+                results[i].LSVialId = jobs[i].LSvial != null ? jobs[i].LSvial.LSVialId : 0;
+                results[i].AddressId = jobs[i].Address != null ? jobs[i].Address.AddressId : 0;
+            }
+            return jobs == null ?
+                (ActionResult<JobDTO[]>)NotFound() :
+                (ActionResult<JobDTO[]>)Ok(results);
         }
 
         [HttpGet("{jobId}")]

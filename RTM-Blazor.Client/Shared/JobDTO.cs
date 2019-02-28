@@ -17,6 +17,9 @@ namespace RTM_Blazor.Client.Shared {
         public bool Confirmed { get; set; }
         public bool Completed { get; set; }
         public string LastUpdatedBy { get; set; }
-        public AddressDTO JobAddress { get; set; }
+        public int AddressId { get; set; }
+        public int CRMId { get; set; }
+        public int LSVialId { get; set; }
+        
     }
 }

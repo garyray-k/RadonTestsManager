@@ -28,6 +28,8 @@ else
                 <th>Completed</th>
                 <th>Last Updated By</th>
                 <th>Job Address</th>
+                <th>CRM Number</th>
+                <th>LS Vial Serial</th>
             </tr>
         </thead>
         <tbody>
@@ -47,7 +49,24 @@ else
                     <td> @ConfirmedHandler(job.Confirmed) </td>
                     <td> @CompletedHandler(job.Completed) </td>
                     <td> @job.LastUpdatedBy </td>
-                    <td> @job.JobAddress </td>
+                    @if (job.AddressId == 0) 
+                    {
+                        <td> No Address </td>
+                    } else {
+                        <td> @job.AddressId </td>
+                    }
+                    @if (job.CRMId == 0) 
+                    {
+                        <td> CRM#: N/A </td>
+                    } else {
+                        <td> CRM #: @job.CRMId </td>
+                    }
+                    @if (job.LSVialId == 0) {
+                        <td> No LS Vial </td>
+                    } else {
+                        <td> Vial#: @job.LSVialId </td>
+                    }
+                    
                 </tr>
             }
         </tbody>

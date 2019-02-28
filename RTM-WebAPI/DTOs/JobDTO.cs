@@ -26,5 +26,8 @@ namespace RadonTestsManager.DTOs {
         public bool Confirmed { get; set; }
         public bool Completed { get; set; }
         public string LastUpdatedBy { get; set; }
+        public int CRMId { get; set; }
+        public int LSVialId { get; set; }
+        public int AddressId { get; set; }
     }
 }
